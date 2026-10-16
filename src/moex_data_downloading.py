@@ -21,7 +21,7 @@ class MoexISSClient:
         all_rows = []
         start_cursor = 0
 
-        logging.info(f"Запуск скачивания из MOEX ISS: {ticker} ({start_date} -> {end_date})")
+        logging.info(f"Запуск скачивания из MOEX ISS: {ticker}")
 
         while True:
             params = {
@@ -29,7 +29,7 @@ class MoexISSClient:
                 'till': end_date,
                 'start': start_cursor,
                 'iss.meta': 'off',
-                'history.columns': 'TRADEDATE,CLOSE,HIGH,LOW'
+                'history.columns': 'TRADEDATE,CLOSE,HIGH,LOW,VALUE'
             }
 
             response_json = None
@@ -58,7 +58,8 @@ class MoexISSClient:
                 if len(row) > 3 and row[0] is not None and row[1] is not None and row[2] is not None and row[
                     3] is not None:
                     if float(row[1]) > 0 and float(row[2]) > 0 and float(row[3]) > 0:
-                        all_rows.append([row[0], float(row[1]), float(row[2]), float(row[3])])
+                        try: all_rows.append([row[0], float(row[1]), float(row[2]), float(row[3]), float(row[4])])
+                        except: all_rows.append([row[0], float(row[1]), float(row[2]), float(row[3]), 0.0])
 
             if len(page_data) < 100:
                 break
