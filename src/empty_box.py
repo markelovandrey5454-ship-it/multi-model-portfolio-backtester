@@ -7,7 +7,9 @@ class BasePortfolioStrategy(ABC):
         self.name = name
 
     @abstractmethod
-    def optimize_weights(self, historical_returns: pd.DataFrame, prev_weights: np.ndarray, volatility_history: pd.DataFrame = None) -> np.ndarray:
+    def optimize_weights(self, historical_returns: pd.DataFrame, prev_weights: np.ndarray, volatility_history: pd.DataFrame,
+                         volume_history: pd.DataFrame, current_portfolio_value: float
+                         ) -> np.ndarray:
         pass
 
 def decode_portfolio_to_bits(encoded_str, total_assets_count):
