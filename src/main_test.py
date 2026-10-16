@@ -1,6 +1,9 @@
 import os
+import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 from visualizer import DatatestVisualizer
+from empty_box import decode_portfolio_to_bits
 
 
 ASSET_NAMES = pd.read_csv('data/matrix/global_volatility_panel.csv', nrows=0).drop(columns=['Date'], errors='ignore').columns.tolist()
@@ -12,13 +15,13 @@ if __name__ == "__main__":
     visualizer = DatatestVisualizer()
 
     strategy_files = {
-        'Base CVaR': 'test_Base CVaR.csv',
-        'Robust CVaR (New)': 'test_Controlled-risk prototype.csv',
-        'Robust CVaR (Old)': 'test_High-risk prototype.csv',
-        'Robust CVaR (0.1)': 'test_0.1 prototype.csv',
+        '0.1 prototype': 'test_0.1 prototype.csv',
+        'RankEnsemble_Frankenstein': 'test_RankEnsemble_Frankenstein.csv',
         'Uniform 1/N': 'test_Uniform 1_N.csv',
+        'Base CVaR': 'test_Base CVaR.csv',
         'Markowitz': 'test_Markowitz.csv',
-        'Random Monkey': 'test_Random Monkey.csv'
+        'Random Monkey': 'test_Random Monkey.csv',
+        'Stochastic Momentum': 'test_Stochastic Momentum.csv'
     }
 
     raw_dfs = {}
@@ -26,17 +29,6 @@ if __name__ == "__main__":
         path = os.path.join(data_dir, fname)
         raw_dfs[label] = pd.read_csv(path)
 
-    print(f"Данные успешно считаны. Найдено {len(raw_dfs['Robust CVaR (New)'])} прогонов симуляции.")
+    print(f"Данные успешно считаны. Найдено {len(raw_dfs['0.1 prototype'])} прогонов симуляции.")
 
-    all_results, worst_results = visualizer.generate_research_plots(raw_dfs)
-
-    for model_name in ['Robust CVaR (Old)', 'Robust CVaR (New)', 'Robust CVaR (0.1)']:
-        df_bad = worst_results[model_name]
-        df_all = all_results[model_name]
-
-        print(f"\n=== ИССЛЕДОВАНИЕ КРИТИЧЕСКИХ ПРОВАЛОВ ДЛЯ: {model_name.upper()} ===")
-
-        if df_bad.empty:
-            print("Модель показала абсолютную устойчивость во всех окнах!")
-            continue
-        else: print(f"Выявлено значимых аномальных проработок: {len(df_bad)} шт.")
+    visualizer.generate_research_plots(raw_dfs)
