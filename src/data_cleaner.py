@@ -6,21 +6,23 @@ class DataCleaner:
     def __init__(self, storage: LocalCSVStorage):
         self.storage = storage
 
-    def build_cleaned_market_data(self, assets_config: dict, target_start: str, delist_history: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def build_cleaned_market_data(self, assets_config: dict, target_start: str, delist_history: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         close_series_dict = {}
         high_series_dict = {}
         low_series_dict = {}
+        volume_series_dict = {}
 
         for asset_name, stages in assets_config.items():
             df = self.storage.get_market_data(asset_name=asset_name, stages=stages, target_start=target_start)
-            if not df.empty:
-                close_series_dict[asset_name] = df[f"{asset_name}_close"]
-                high_series_dict[asset_name] = df[f"{asset_name}_high"]
-                low_series_dict[asset_name] = df[f"{asset_name}_low"]
+            close_series_dict[asset_name] = df[f"{asset_name}_close"]
+            high_series_dict[asset_name] = df[f"{asset_name}_high"]
+            low_series_dict[asset_name] = df[f"{asset_name}_low"]
+            volume_series_dict[asset_name] = df[f"{asset_name}_volume"]
 
         price_matrix = pd.concat(close_series_dict.values(), axis=1,keys=close_series_dict.keys()).sort_index().replace(0.0, np.nan)
         high_matrix = pd.concat(high_series_dict.values(), axis=1, keys=high_series_dict.keys()).sort_index().replace(0.0, np.nan)
         low_matrix = pd.concat(low_series_dict.values(), axis=1, keys=low_series_dict.keys()).sort_index().replace(0.0,np.nan)
+        volume_matrix = pd.concat(volume_series_dict.values(), axis=1, keys=volume_series_dict.keys()).replace(np.nan,0.0)
 
         if 'Денежный рынок(REPO)' in price_matrix.columns and 'Денежный рынок(LQDT)' in price_matrix.columns:
             price_matrix['Денежный рынок(REPO)'] = price_matrix['Денежный рынок(REPO)'].ffill()
@@ -49,7 +51,7 @@ class DataCleaner:
                 low_matrix.loc[f_idx:, col] = low_matrix.loc[f_idx:, col].ffill()
 
         for ticker in price_matrix.columns:
-            if ticker in ['Денежный рынок(REPO)', 'Денежный рынок(LQDT)']: continue
+            if ticker in ['Денежный рынок(REPO)', 'Денежный рынок(LQDT)', 'IMOEX ПД + налог РФ']: continue
             p = price_matrix[ticker].to_numpy()
             for t in range(1, len(p)):
                 if pd.isna(p[t]) or pd.isna(p[t - 1]): continue
@@ -69,9 +71,9 @@ class DataCleaner:
         translate_cur = {'USD':'Доллар', 'EUR':'Евро'}
 
         for asset_name, stages in assets_config.items():
-            if stages[0]['market'] != 'shares' or stages[0]['secid'] == 'LQDT': continue
-            tickers = {st['secid'] for st in stages}
-            df_div = self.storage.get_dividends_data(asset_name=asset_name, tickers=list(tickers))
+            if (stages[0]['market'] != 'shares') or (stages[0]['secid'] == 'LQDT'): continue
+
+            df_div = self.storage.get_dividends_data(asset_name=asset_name)
             if df_div.empty: continue
 
             for idx, row in df_div.iterrows():
@@ -80,10 +82,9 @@ class DataCleaner:
 
                 div_value, currency = float(row['value']), str(row['currency']).upper().strip()
                 if currency in ['USD', 'EUR']:
-                    fx_date = price_matrix.index[price_matrix.index <= idx][-1] if idx not in price_matrix.index else idx
+                    fx_date = price_matrix.index[price_matrix.index <= idx][-1]
                     rub_value = div_value * price_matrix.loc[fx_date, translate_cur[currency]]
-                else:
-                    rub_value = div_value
+                else: rub_value = div_value
 
                 price_date = price_matrix.index[price_matrix.index < idx][-1]
                 rub_value *= 0.87
@@ -92,7 +93,6 @@ class DataCleaner:
                 div_matrix.loc[payout_date, asset_name] += rub_value / price_matrix.loc[price_date, asset_name]
 
         prev_close_matrix = price_matrix.shift(1)
-
 
         robust_high = np.maximum(high_matrix.to_numpy(), prev_close_matrix.to_numpy())
         robust_low = np.minimum(low_matrix.to_numpy(), prev_close_matrix.to_numpy())
@@ -117,9 +117,6 @@ class DataCleaner:
 
                 vol_matrix.loc[first_valid_idx:, col] = post_ipo_slice
 
-        for m in [returns_matrix, div_matrix, high_matrix, low_matrix, vol_matrix]:
-            m.drop(columns=['Денежный рынок(REPO)'], inplace=True)
-
         for delist_company in delist_history.index:
             delist_date = delist_history.loc[delist_company, "Date"]
             if delist_company in returns_matrix.columns:
@@ -135,4 +132,20 @@ class DataCleaner:
         delist_history.drop(columns=['Currency'], inplace=True)
         delist_history.to_csv('data/matrix/global_delist_panel.csv')
 
-        return returns_matrix, div_matrix, vol_matrix
+        for asset_name, stages in assets_config.items():
+            if asset_name in ['Денежный рынок(REPO)', 'IMOEX ПД + налог РФ']:
+                continue
+
+            if asset_name in ['ОФЗ, фикс 1+', 'ОФЗ, фикс 5-10', 'ВДО, фикс', 'Денежный рынок(LQDT)', 'Юань', 'Доллар', 'Евро', 'Золото', 'Серебро']: volume_matrix[asset_name] = 100_000_000_000.0
+
+            for delist_company in delist_history.index:
+                delist_date = delist_history.loc[delist_company, "Date"]
+                if delist_company in volume_matrix.columns:
+                    volume_matrix.loc[delist_date:, delist_company] = 0.0
+
+        for m in [returns_matrix, div_matrix, high_matrix, low_matrix, vol_matrix, volume_matrix]:
+            m.drop(columns=['Денежный рынок(REPO)', 'IMOEX ПД + налог РФ'], inplace=True, errors='ignore')
+            m.drop(index=['2010-01-11', '2010-12-31', '2014-06-13', '2022-01-07', '2022-02-23', '2022-02-28', '2022-03-01', '2022-03-02', '2022-03-03', '2022-03-04', '2022-03-09', '2022-03-10',
+                          '2022-03-11', '2022-03-14', '2022-03-15', '2022-03-16', '2022-03-17', '2022-03-18', '2022-03-21', '2022-03-22', '2022-03-23'], inplace=True, errors='ignore')
+
+        return returns_matrix, div_matrix, vol_matrix, volume_matrix
