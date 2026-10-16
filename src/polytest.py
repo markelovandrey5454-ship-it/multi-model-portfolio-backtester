@@ -3,35 +3,44 @@ from datetime import datetime
 import random
 import numpy as np
 import logging
-from backtest_engine import PortfolioOrchestrator, PortfolioBacktester
+from backtest_engine import PortfolioOB
 import os
 import csv
-from benchmarks import (UniformStrategy, RandomMonkeyStrategy, MarkowitzStrategy, BaseCVaRStrategy,
-                        RobustParabolicCvarStrategy_old, RobustParabolicCvarStrategy_new, RobustParabolicCvarStrategy_medium)
+from benchmarks import (UniformStrategy, RandomMonkeyStrategy, MarkowitzStrategy, BaseCVaRStrategy, StochasticMomentumStrategy,
+                        ML_RankEnsemble_Frankenstein, RobustParabolicCvarStrategy_medium)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - [%(levelname)s] - %(message)s')
 BASE32_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 n = 250
+benchmark = ['Uniform 1/N', 'Random Monkey', 'Markowitz', 'Base CVaR', 'Stochastic Momentum']
 
 if __name__ == "__main__":
-    panel_path = 'data/matrix/global_board_panel.csv'
-    vol_path = 'data/matrix/global_volatility_panel.csv'
-    del_path = 'data/matrix/global_delist_panel.csv'
+    board_panel = pd.read_csv('data/matrix/global_board_panel.csv', parse_dates=['Date']).set_index('Date')
+    volatility_panel = pd.read_csv('data/matrix/global_volatility_panel.csv', parse_dates=['Date']).set_index('Date')
+    volume_panel = pd.read_csv('data/matrix/global_volume_panel.csv', parse_dates=['Date']).set_index('Date')
+    delist_history = pd.read_csv('data/matrix/global_delist_panel.csv', parse_dates=['Date']).set_index('Date')
 
-    board_panel = pd.read_csv(panel_path, parse_dates=['Date']).set_index('Date')
-    volatility_panel = pd.read_csv(vol_path, parse_dates=['Date']).set_index('Date')
-    delist_history = pd.read_csv(del_path, parse_dates=['Date']).set_index('Date')
+    r_lqdt = board_panel['Денежный рынок(LQDT)']
+    r_mcftrr = pd.read_csv('data/cache/IMOEX ПД + налог РФ.csv', parse_dates=['Date']).set_index('Date')['IMOEX ПД + налог РФ_close'].reindex(r_lqdt.index).ffill().pct_change().dropna()
+
+    fieldnames = [
+        'start_date', 'end_date', 'window_length_days',
+        'cagr', 'sortino', 'jenser',
+        'ulcer', 'max_drawdown', 'max_daily_drop',
+        'asset_count', 'encoded_assets'
+    ]
+
     print("=== ЗАПУСК СЛУЧАЙНОГО БЭКТЕСТА СИСТЕМЫ ===")
     for exper in range(1, n + 1):
         delt_date = random.randint(3,5)
-        start_date = random.randint(int(datetime(2015, 1, 1).timestamp()), int(datetime(2026 - delt_date, 9, 1).timestamp()))
+        start_date = random.randint(int(datetime(2015, 1, 1).timestamp()), int(datetime(2026 - delt_date, 10, 1).timestamp()))
         start_date = pd.to_datetime(datetime.fromtimestamp(start_date).date())
         end_date = start_date + pd.DateOffset(years=delt_date)
         start = start_date.strftime("%Y-%m-%d")
         end = end_date.strftime("%Y-%m-%d")
 
         final_bit_mask = np.zeros(len(volatility_panel.columns), dtype=int)
-        alive_assets_mask = np.isnan(volatility_panel.loc[start:end]).sum(axis=0) == 0
+        alive_assets_mask = (~np.isnan(volatility_panel.loc[start:end])).sum(axis=0) != 0
         alive_indices = np.where(alive_assets_mask)[0]
 
         lqdt_index = volatility_panel.columns.get_loc('Денежный рынок(LQDT)')
@@ -64,38 +73,41 @@ if __name__ == "__main__":
                 val = (val << 1) | bit
             encoded_assets += BASE32_CHARS[val]
 
-        strategies = [UniformStrategy(), RandomMonkeyStrategy(), MarkowitzStrategy(), BaseCVaRStrategy(), RobustParabolicCvarStrategy_old(), RobustParabolicCvarStrategy_new(), RobustParabolicCvarStrategy_medium()]
-
-        print(f"\n[ШАГ 1/3] Запуск динамической симуляции ребалансировок моделей, эксперимент {exper}")
-        orchestrator = PortfolioOrchestrator(board_panel, volatility_panel, strategies)
-        all_weights = orchestrator.generate_weights_history(start_date=start, end_date=end, assets=assets_str)
-
-        chosen_live_tickers = all_weights[strategies[-1].name].columns.tolist()
-        chosen_board_cols = []
-        for ticker in chosen_live_tickers:
-            chosen_board_cols.append(ticker)
-            div_col = f"{ticker}_div"
-            if div_col in board_panel.columns:
-                chosen_board_cols.append(div_col)
-
-        print(f"\n[ШАГ 2/3] Расчет накопления капитала по макро-сценариям, эксперимент {exper}")
-        backtester = PortfolioBacktester(board_panel[chosen_board_cols], delist_history, inflation_annual=0.075, commission=0.0005)
-
-        r_lqdt = board_panel['Денежный рынок(LQDT)']
-        fieldnames = [
-            'start_date', 'end_date', 'window_length_days',
-            'cagr', 'sortino', 'ulcer', 'max_drawdown', 'max_daily_drop',
-            'asset_count', 'encoded_assets',
-            'sortino_vs_1/N', 'sortino_vs_monkey', 'sortino_vs_markowitz', 'sortino_vs_cvar'
+        strategies = [
+            UniformStrategy(),
+            RandomMonkeyStrategy(),
+            StochasticMomentumStrategy(),
+            BaseCVaRStrategy(),
+            MarkowitzStrategy(),
+            RobustParabolicCvarStrategy_medium(),
+            ML_RankEnsemble_Frankenstein()
         ]
-        srtn_delta = {}
+
+        ob = PortfolioOB(
+            board_panel=board_panel,
+            volatility_panel=volatility_panel,
+            volume_panel=volume_panel,
+            delist_history=delist_history,
+            strategies=strategies,
+            commission=0.0005
+        )
+
+        results_df = ob.simulation(
+            start_date=start,
+            end_date=end,
+            initial_capital=1_000_000.0,
+            key=True,
+            assets=assets_str
+        )
+
+        n_days = len(results_df)
+        welch = {}
 
         for strat in strategies:
             name = strat.name
-            bench_key = name in ['Uniform 1/N', 'Random Monkey', 'Markowitz', 'Base CVaR']
-            run = backtester.run_lumpsum_simulation(all_weights[name], initial_capital=1_000_000.0)
-            result = run['Nominal_Capital']
-            result_taxless = run['Nominal_Capital_Taxless']
+            bench_key = name in benchmark
+            result = results_df[f'{name}_Lump']
+            result_taxless = results_df[f'{name}_Lump_tf']
 
             cagr = (result.iloc[-1] / result.iloc[0]) ** (252.0 / len(result)) - 1.0
             cagr_taxless = (result_taxless.iloc[-1] / result_taxless.iloc[0]) ** (252.0 / len(result)) - 1.0
@@ -103,26 +115,23 @@ if __name__ == "__main__":
             r_t = result_taxless.pct_change().dropna()
 
             excess_r = r_t - r_lqdt.loc[r_t.index]
+            excess_moex = r_mcftrr.loc[r_t.index] - r_lqdt.loc[r_t.index]
+
+            cov_matrix = np.cov(excess_r, excess_moex)
+            beta = cov_matrix[0, 1] / (cov_matrix[1, 1] + 1e-12)
+
             cagr_lqdt = np.exp(np.log1p(r_lqdt.loc[r_t.index]).sum()) ** (252.0 / len(result)) - 1.0
+            cagr_moex = np.exp(np.log1p(r_mcftrr.loc[r_t.index]).sum()) ** (252.0 / len(result)) - 1.0
             cagr_excess = cagr_taxless - cagr_lqdt
+
+            jenser = cagr_taxless - cagr_lqdt - beta * (cagr_moex - cagr_lqdt)
 
             downside_r = np.minimum(0, excess_r)
             downside_std = np.sqrt(np.mean(downside_r ** 2))
             if downside_std > 0:
                 if cagr_excess > 0: sortino = cagr_excess / (downside_std * np.sqrt(252))
                 else: sortino = cagr_excess * downside_std * np.sqrt(252)
-            else:
-                sortino = -np.inf
-
-            if bench_key: srtn_delta[name] = [r_t, cagr_taxless]
-            else:
-                sortino_bc_results = {}
-                for bench in ['Uniform 1/N', 'Random Monkey', 'Markowitz', 'Base CVaR']:
-                    excess_bc_r = r_t - srtn_delta[bench][0]
-                    cagr_ex_bc = cagr_taxless - srtn_delta[bench][1]
-                    downside_bc_r = np.minimum(0, excess_bc_r)
-                    downside_std_bc = np.sqrt(np.mean(downside_bc_r ** 2))
-                    sortino_bc_results[bench] = cagr_ex_bc / (max(downside_std_bc, 1e-9) * np.sqrt(252))
+            else: sortino = -np.inf
 
             max_drawdown = 0.0
             ulcer = 0.0
@@ -141,19 +150,9 @@ if __name__ == "__main__":
             max_daily_drop = min(np.min(r_t) * 100.0, 0.0)
 
             metrics_dict = {'start_date': start, 'end_date': end, 'window_length_days': len(result),
-            'cagr': cagr * 100, 'sortino': sortino, 'ulcer': ulcer, 'max_drawdown': max_drawdown, 'max_daily_drop': max_daily_drop,
+            'cagr': cagr * 100, 'sortino': sortino, 'jenser' : jenser * 100,
+            'ulcer': ulcer, 'max_drawdown': max_drawdown, 'max_daily_drop': max_daily_drop,
             'asset_count': int(np.sum(random_bits) + 3), 'encoded_assets': encoded_assets}
-
-            if not bench_key:
-                metrics_dict['sortino_vs_1/N'] = sortino_bc_results['Uniform 1/N']
-                metrics_dict['sortino_vs_monkey'] = sortino_bc_results['Random Monkey']
-                metrics_dict['sortino_vs_markowitz'] = sortino_bc_results['Markowitz']
-                metrics_dict['sortino_vs_cvar'] = sortino_bc_results['Base CVaR']
-            else:
-                metrics_dict['sortino_vs_1/N'] = np.nan
-                metrics_dict['sortino_vs_monkey'] = np.nan
-                metrics_dict['sortino_vs_markowitz'] = np.nan
-                metrics_dict['sortino_vs_cvar'] = np.nan
 
             filepath = f'data/results/test_{name.replace('/', '_')}.csv'
             file_exists = os.path.isfile(filepath)
