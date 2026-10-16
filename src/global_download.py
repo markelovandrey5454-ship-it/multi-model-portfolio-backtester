@@ -32,9 +32,9 @@ assets_portfolio = {
     'Ростелеком П': [{'secid': 'RU0009046700', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},     # 1997-07-15:2003-09-30 -листинг+дивы
                      {'secid': 'RTKMP', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},            # 2003-10-01:2013-08-30
                      {'secid': 'RTKMP', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],           # 2013-08-01:наши дни
-    'Астра': [{'secid': 'ASTR', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                   # 2023-10-13:наши дни   +листинг+дивы
-    'Диасофт': [{'secid': 'DIAS', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2024-02-13:наши дни   +листинг+дивы
-    'Позитив': [{'secid': 'POSI', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2021-12-17:наши дни   +листинг+дивы
+    'Астра': [{'secid': 'ASTR', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                   # 2023-10-13:наши дни   +листинг(333)+дивы
+    'Диасофт': [{'secid': 'DIAS', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2024-02-13:наши дни   +листинг(4500)+дивы
+    'Позитив': [{'secid': 'POSI', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2021-12-17:наши дни   +листинг(777)+дивы
     'ИнтерРАО': [{'secid': 'IUES', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},                 # 2009-12-01:2011-09-26 -листинг+дивы
                  {'secid': 'IUES', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},                 # 2011-09-27:2011-11-18
                  {'secid': 'IRAO', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},                 # 2011-11-21:2013-08-30
@@ -54,7 +54,7 @@ assets_portfolio = {
                     {'secid': 'AFKS', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],             # 2014-06-09:наши дни
     'ЭсЭфАй': [{'secid': 'EPLN', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'},                   # 2015-12-11:2017-12-29 -листинг+дивы
                {'secid': 'SFIN', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                  # 2018-01-03:наши дни
-    'Whoosh': [{'secid': 'WUSH', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                  # 2022-12-14:наши дни   +листинг+дивы
+    'Whoosh': [{'secid': 'WUSH', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                  # 2022-12-14:наши дни   +листинг(185)+дивы
     'Мать и Дитя': [{'secid': 'MDMG', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],             # 2020-11-09:наши дни   -листинг+дивы
     'Газпром': [{'secid': 'GAZP', 'engine': 'stock', 'market': 'shares', 'board': 'EQNE'},                  # 2006-01-23:2013-08-30 -листинг+дивы
                 {'secid': 'GAZP', 'engine': 'stock', 'market': 'shares', 'board': 'TQNE'},                  # 2013-03-25:2013-12-25
@@ -88,7 +88,7 @@ assets_portfolio = {
     'Татнефть': [{'secid': 'RU14TATN3006', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},         # 2002-01-04:2011-11-18 -листинг+дивы
                  {'secid': 'TATN', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},                 # 2011-11-21:2013-08-30
                  {'secid': 'TATN', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                # 2013-07-10:наши дни
-    'Алроса': [{'secid': 'ALRS', 'engine': 'stock', 'market': 'shares', 'board': 'EQNE'},                   # 2011-11-29:2012-04-20 +листинг+дивы
+    'Алроса': [{'secid': 'ALRS', 'engine': 'stock', 'market': 'shares', 'board': 'EQNE'},                   # 2011-11-29:2012-04-20 +листинг(35)+дивы
                {'secid': 'ALRS', 'engine': 'stock', 'market': 'shares', 'board': 'EQBS'},                   # 2012-04-23:2012-10-01
                {'secid': 'ALRS', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},                   # 2012-10-02:2013-08-30
                {'secid': 'ALRS', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                  # 2013-09-02:наши дни
@@ -121,26 +121,26 @@ assets_portfolio = {
                    {'secid': 'CHMF', 'engine': 'stock', 'market': 'shares', 'board': 'TQNL'},               # 2013-04-03:2014-04-07
                    {'secid': 'CHMF', 'engine': 'stock', 'market': 'shares', 'board': 'TQBS'},               # 2014-04-08:2014-06-06
                    {'secid': 'CHMF', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],              # 2014-06-09:наши дни
-    'Сегежа': [{'secid': 'SGZH', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                  # 2021-04-28:наши дни   +листинг+дивы
+    'Сегежа': [{'secid': 'SGZH', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                  # 2021-04-28:наши дни   +листинг(8)+дивы
     'ФосАгро': [{'secid': 'PHOR', 'engine': 'stock', 'market': 'shares', 'board': 'EQLV'},                  # 2011-07-18:2012-11-13 -листинг+дивы
                 {'secid': 'PHOR', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},                  # 2012-11-14:2013-02-27
                 {'secid': 'PHOR', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},                  # 2013-02-28:2013-08-30
                 {'secid': 'PHOR', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2013-09-02:наши дни
-    'ЮжУралЗолото': [{'secid': 'UGLD', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],            # 2023-11-22:наши дни   +листинг+дивы
+    'ЮжУралЗолото': [{'secid': 'UGLD', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],            # 2023-11-22:наши дни   +листинг(0.55)+дивы
     'Хэдхантер': [{'secid': 'HHRU', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'},                # 2020-09-25:2024-08-09 -листинг+дивы
                   {'secid': 'HEAD', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],               # 2024-09-26:наши дни
     'Пик': [{'secid': 'PIKK', 'engine': 'stock', 'market': 'shares', 'board': 'EQLV'},                      # 2007-06-29:2007-12-19 -листинг+дивы
             {'secid': 'PIKK', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},                      # 2007-12-20:2011-09-06
             {'secid': 'PIKK', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},                      # 2011-09-07:2013-08-30
             {'secid': 'PIKK', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                     # 2013-09-02:наши дни
-    'Самолет': [{'secid': 'SMLT', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2020-10-29:наши дни   +листинг+дивы
+    'Самолет': [{'secid': 'SMLT', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2020-10-29:наши дни   +листинг(950)+дивы
     'Эталон': [{'secid': 'ETLN', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                  # 2020-02-03:наши дни   -листинг+дивы
     'М-Видео': [{'secid': 'MVID', 'engine': 'stock', 'market': 'shares', 'board': 'EQLI'},                  # 2007-11-06:2008-04-07 -листинг+дивы
                 {'secid': 'MVID', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},                  # 2008-04-08:2013-08-30
                 {'secid': 'MVID', 'engine': 'stock', 'market': 'shares', 'board': 'TQNL'},                  # 2013-09-02:2013-10-30
                 {'secid': 'MVID', 'engine': 'stock', 'market': 'shares', 'board': 'TQBS'},                  # 2013-10-31:2014-06-06
                 {'secid': 'MVID', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                 # 2014-06-09:наши дни
-    'Хэндерсон': [{'secid': 'HNFG', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],               # 2023-11-02:наши дни   +листинг+дивы
+    'Хэндерсон': [{'secid': 'HNFG', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],               # 2023-11-02:наши дни   +листинг(675)+дивы
     'Озон': [{'secid': 'OZON', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                    # 2020-11-24:наши дни   -листинг+дивы
     'Аэрофлот': [{'secid': 'RU0009062285', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},         # 2000-03-09:2001-04-27 -листинг+дивы
                  {'secid': 'RU0009062285', 'engine': 'stock', 'market': 'shares', 'board': 'EQBS'},         # 2001-04-28:2004-02-12
@@ -174,8 +174,8 @@ assets_portfolio = {
              {'secid': 'NMTP', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},                     # 2008-08-01:2013-08-30
              {'secid': 'NMTP', 'engine': 'stock', 'market': 'shares', 'board': 'TQNL'},                     # 2013-09-02:2014-06-06
              {'secid': 'NMTP', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                    # 2014-06-09:наши дни
-    'СовкомФлот': [{'secid': 'FLOT', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],              # 2020-10-07:наши дни   +листинг+дивы
-    'НКХП': [{'secid': 'NKHP', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                    # 2015-12-15:наши дни   +листинг+дивы
+    'СовкомФлот': [{'secid': 'FLOT', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],              # 2020-10-07:наши дни   +листинг(105)+дивы
+    'НКХП': [{'secid': 'NKHP', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                    # 2015-12-15:наши дни   +листинг(512)+дивы
     'Транснефть П': [{'secid': 'RU14TRNF1015', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},     # 2002-05-22:2008-01-11 -листинг+дивы
                      {'secid': 'TRNFP', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},            # 2008-01-14:2013-08-30
                      {'secid': 'TRNFP', 'engine': 'stock', 'market': 'shares', 'board': 'TQNL'},            # 2013-03-25:2013-12-13
@@ -188,11 +188,11 @@ assets_portfolio = {
             {'secid': 'VTBR', 'engine': 'stock', 'market': 'shares', 'board': 'EQNL'},                      # 2007-10-30:2013-02-27
             {'secid': 'VTBR', 'engine': 'stock', 'market': 'shares', 'board': 'EQBR'},                      # 2013-02-28:2013-08-30
             {'secid': 'VTBR', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                     # 2013-03-25:наши дни
-    'Европлан': [{'secid': 'LEAS', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                # 2024-03-29:наши дни   +листинг+дивы(c NaN)
+    'Европлан': [{'secid': 'LEAS', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                # 2024-03-29:наши дни   +листинг(875)+дивы(c NaN)
     'МосБиржа': [{'secid': 'MOEX', 'engine': 'stock', 'market': 'shares', 'board': 'EQLV'},                 # 2013-02-15:2013-04-03 -листинг+дивы
                  {'secid': 'MOEX', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],                # 2013-04-04:наши дни
-    'Ренессанс': [{'secid': 'RENI', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],               # 2021-10-21:наши дни   +листинг+дивы
-    'Совкомбанк': [{'secid': 'SVCB', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],              # 2023-12-15:наши дни   +листинг+дивы
+    'Ренессанс': [{'secid': 'RENI', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],               # 2021-10-21:наши дни   +листинг(120)+дивы
+    'Совкомбанк': [{'secid': 'SVCB', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],              # 2023-12-15:наши дни   +листинг(11.5)+дивы
     'СПБ Биржа': [{'secid': 'SPBE', 'engine': 'stock', 'market': 'shares', 'board': 'TQBR'}],               # 2021-11-19:наши дни   -листинг-дивы
     'КазОргСинтез': [{'secid': 'KZOS', 'engine': 'stock', 'market': 'shares', 'board': 'EQNE'},             # 2011-12-05:2013-08-30 -листинг+дивы
                      {'secid': 'KZOS', 'engine': 'stock', 'market': 'shares', 'board': 'TQNE'},             # 2013-09-02:2014-06-06
@@ -279,6 +279,9 @@ assets_portfolio = {
     'ОФЗ, фикс 5-10': [{'secid': 'RUGBITR10Y', 'engine': 'stock', 'market': 'index', 'board': 'RTSI'}],     # 2010-12-30:наши дни
     'ВДО, фикс': [{'secid': 'RUCBITRB', 'engine': 'stock', 'market': 'index', 'board': 'RTSI'},             # 2010-12-30:2023-05-31
                   {'secid': 'RUCBHYTR', 'engine': 'stock', 'market': 'index', 'board': 'RTSI'}],            # 2021-03-26:наши дни
+
+    'IMOEX ПД + налог РФ': [{'secid': 'MCFTRR', 'engine': 'stock', 'market': 'index', 'board': 'RTSI'}],    # 2003-02-26:наши дни
+
     #здесь могли быть линкеры, замещайки и ПК, недвижимость пока убрал(тк непонятно как ее правильно добавить)
 
     'Денежный рынок(LQDT)': [{'secid': 'LQDT', 'engine': 'stock', 'market': 'shares', 'board': 'TQTF'},     # 2022-07-22:2026-06-19
@@ -301,9 +304,9 @@ if __name__ == "__main__":
 
     logging.info("=== ЗАПУСК ГЛОБАЛЬНОЙ СИНХРОНИЗАЦИИ ДАННЫХ (ГОРИЗОНТ: С 2010 ГОДА) ===")
 
-    returns_df, divs_df, volatility_panel = cleaner.build_cleaned_market_data(
+    returns_df, divs_df, volatility_panel, volume_panel = cleaner.build_cleaned_market_data(
         assets_config=assets_portfolio,
-        target_start='2010-01-01',
+        target_start='2010-01-12',
         delist_history=delist_history
     )
 
@@ -315,5 +318,6 @@ if __name__ == "__main__":
 
     global_board_panel.to_csv('data/matrix/global_board_panel.csv')
     volatility_panel.to_csv('data/matrix/global_volatility_panel.csv')
+    volume_panel.to_csv('data/matrix/global_volume_panel.csv')
 
     logging.info("=== ГЛОБАЛЬНАЯ СИНХРОНИЗАЦИЯ УСПЕШНО ЗАВЕРШЕНА ===")
