@@ -78,15 +78,16 @@ class DataCleaner:
 
             for idx, row in df_div.iterrows():
                 if idx < price_matrix.index.min() or idx > price_matrix.index.max(): continue
-                payout_date = div_matrix.index[div_matrix.index >= idx][0] if idx not in div_matrix.index else idx
+
+                shift = 0 if idx < pd.Timestamp('2013-08-30') else (-1 if idx >= pd.Timestamp('2023-08-01') else -2)
+                payout_date = div_matrix.index[div_matrix.index.searchsorted(idx, side='right') + shift]
 
                 div_value, currency = float(row['value']), str(row['currency']).upper().strip()
                 if currency in ['USD', 'EUR']:
-                    fx_date = price_matrix.index[price_matrix.index <= idx][-1]
-                    rub_value = div_value * price_matrix.loc[fx_date, translate_cur[currency]]
+                    rub_value = div_value * price_matrix.loc[payout_date, translate_cur[currency]]
                 else: rub_value = div_value
 
-                price_date = price_matrix.index[price_matrix.index < idx][-1]
+                price_date = div_matrix.index[div_matrix.index.searchsorted(idx, side='right') + shift - 1]
                 rub_value *= 0.87
                 high_matrix.loc[payout_date, asset_name] += rub_value
                 low_matrix.loc[payout_date, asset_name] += rub_value
@@ -108,12 +109,8 @@ class DataCleaner:
                 vol_matrix.loc[:first_valid_idx, col] = np.nan
                 post_ipo_slice = vol_matrix.loc[first_valid_idx:, col].to_numpy()
 
-                if col == 'Денежный рынок(LQDT)':
-                    post_ipo_slice = np.where(np.isnan(post_ipo_slice) | (post_ipo_slice < 0.0001), 0.0001,
-                                              post_ipo_slice)
-                else:
-                    post_ipo_slice = np.where(np.isnan(post_ipo_slice) | (post_ipo_slice == 0.0), 0.0005,
-                                              post_ipo_slice)
+                if col == 'Денежный рынок(LQDT)': post_ipo_slice = np.where(np.isnan(post_ipo_slice) | (post_ipo_slice < 0.0001), 0.0001, post_ipo_slice)
+                else: post_ipo_slice = np.where(np.isnan(post_ipo_slice) | (post_ipo_slice == 0.0), 0.0005, post_ipo_slice)
 
                 vol_matrix.loc[first_valid_idx:, col] = post_ipo_slice
 
@@ -123,11 +120,14 @@ class DataCleaner:
                 returns_matrix.loc[delist_date:, delist_company] = np.nan
                 returns_matrix.loc[delist_date, delist_company] = -1.0
                 vol_matrix.loc[delist_date:, delist_company] = np.nan
-                if delist_history.loc[delist_company, "Currency"] in ['USD', 'EUR']:
-                    fx_date = price_matrix.index[price_matrix.index <= delist_date][-1]
-                    delist_history.loc[delist_company, "Amount"] *= price_matrix.loc[fx_date, translate_cur[delist_history.loc[delist_company, "Currency"]]]
-                price_date = price_matrix.index[price_matrix.index < delist_date][-1]
-                delist_history.loc[delist_company, "Amount"] /= price_matrix.loc[price_date, delist_company]
+                amount = delist_history.loc[delist_company, "Amount"]
+                if amount > 0:
+                    if delist_history.loc[delist_company, "Currency"] in ['USD', 'EUR']:
+                        fx_date = price_matrix.index[price_matrix.index <= delist_date][-1]
+                        amount *= price_matrix.loc[fx_date, translate_cur[delist_history.loc[delist_company, "Currency"]]]
+                    price_date = price_matrix.index[price_matrix.index < delist_date][-1]
+                    delist_history.loc[delist_company, "Amount"] = (amount / price_matrix.loc[price_date, delist_company] - 1) * 0.87 + 1
+
 
         delist_history.drop(columns=['Currency'], inplace=True)
         delist_history.to_csv('data/matrix/global_delist_panel.csv')

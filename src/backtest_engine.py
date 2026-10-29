@@ -1,3 +1,5 @@
+import csv
+import os
 import pandas as pd
 import numpy as np
 import logging
@@ -18,8 +20,13 @@ class PortfolioOB:
 
     def simulation(self, initial_capital: float, start_date: str = "2015-01-01", end_date: str = "2028-01-01",
                    key: bool = True, assets: str = None) -> pd.DataFrame:
+
         if assets:
             self.asset_tickers = [col for idx, col in enumerate(self.asset_tickers) if assets[idx] == '1']
+
+        if not key:
+            all_time_weight = {strat.name: np.zeros(len(self.asset_tickers)) for strat in self.strategies}
+            all_time_turnover = {strat.name: 0.0 for strat in self.strategies}
 
         ticker_to_idx = {ticker: idx for idx, ticker in enumerate(self.asset_tickers)}
         sim_dates = self.board_panel[self.asset_tickers].loc[start_date:end_date].index
@@ -50,7 +57,11 @@ class PortfolioOB:
         fix_сash_flow = {'Lump': 0.0, 'Lump_tf': 0.0, 'DCA': 50_000.0, 'FIRE': -60_000.0}
         benchmarks = {'Lump': initial_capital, 'DCA': 50_000.0, 'FIRE': 6_000_000.0}
 
-        prev_weights = {strat.name: np.zeros(len(self.asset_tickers)) for strat in self.strategies}
+        prev_weights = {
+            strat.name: {
+                scen: np.zeros(len(self.asset_tickers)) for scen in active_scenarios
+            } for strat in self.strategies
+        }
 
         for t_idx, current_date in enumerate(sim_dates):
             logging.info(f"Завершен рассчет на дату {current_date}")
@@ -81,25 +92,17 @@ class PortfolioOB:
             for strat in self.strategies:
                 name = strat.name
 
-                live_prev_weights = (prev_weights[name])[active_mask].copy()
-                if np.sum(live_prev_weights) > 0:
-                    live_prev_weights = live_prev_weights / np.sum(live_prev_weights)
-
-                live_new_weights = strat.optimize_weights(historical_returns=historical_returns_adjusted,
-                                                          prev_weights=live_prev_weights,
-                                                          volatility_history=vol_slice,
-                                                          volume_history=volume_slice,
-                                                          current_portfolio_value=state[name]['Lump']['capital'])
-                live_new_weights = np.nan_to_num(live_new_weights, nan=0.0)
-
-                current_weights = np.zeros(len(self.asset_tickers))
-                current_weights[active_mask] = live_new_weights
-
                 for scen in active_scenarios:
+                    cash_flow = fix_сash_flow[scen] if is_new_month else 0.0
+                    if bench_key and scen != 'Lump_tf':
+                        benchmarks[scen] = benchmarks[scen] * (1.0 + self.daily_inflation) + cash_flow
+                        if benchmarks[scen] <= 0: benchmarks[scen] = 0.0
+                        res.loc[current_date, f'Inflation_Benchmark_{scen}'] = benchmarks[scen]
+
                     if state[name][scen]['default']: continue
 
                     prev_capital = state[name][scen]['capital']
-                    prev_asset_values = prev_capital * prev_weights[name]
+                    prev_asset_values = prev_capital * prev_weights[name][scen]
                     tax = 0.0 if scen == 'Lump_tf' else 0.13
 
                     if is_new_year:
@@ -115,15 +118,10 @@ class PortfolioOB:
                     for item in ready_2_pay:
                         payout += item[1]
                     prev_capital += payout
+                    state[name][scen]["prev_year_cap"] += payout
 
-                    cash_flow = fix_сash_flow[scen] if is_new_month else 0.0
                     prev_capital += cash_flow
                     state[name][scen]["prev_year_cap"] += cash_flow
-
-                    if bench_key and scen != 'Lump_tf':
-                        benchmarks[scen] = benchmarks[scen] * (1.0 + self.daily_inflation) + cash_flow
-                        if benchmarks[scen] <= 0: benchmarks[scen] = 0.0
-                        res.loc[current_date, f'Inflation_Benchmark_{scen}'] = benchmarks[scen]
 
                     if prev_capital <= 0:
                         if scen != 'DCA':
@@ -132,20 +130,21 @@ class PortfolioOB:
                         else: res.loc[current_date, f'{name}_{scen}'] = 0.0
                         continue
 
-                    """live_prev_weights = (prev_weights[name][scen])[active_mask].copy()
-                    if np.sum(live_prev_weights) > 0: live_prev_weights = live_prev_weights / np.sum(live_prev_weights)
+                    if scen != 'Lump_tf':
+                        live_prev_weights = (prev_weights[name][scen])[active_mask].copy()
+                        if np.sum(live_prev_weights) > 0: live_prev_weights = live_prev_weights / np.sum(live_prev_weights)
 
-                    live_new_weights = strat.optimize_weights(historical_returns=historical_returns_adjusted,
-                                                              prev_weights=live_prev_weights,
-                                                              volatility_history=vol_slice,
-                                                              volume_history=volume_slice,
-                                                              current_portfolio_value=state[name][scen]['capital'])
-                    live_new_weights = np.nan_to_num(live_new_weights, nan=0.0)
+                        live_new_weights = strat.optimize_weights(historical_returns=historical_returns_adjusted,
+                                                                  prev_weights=live_prev_weights,
+                                                                  volatility_history=vol_slice,
+                                                                  volume_history=volume_slice,
+                                                                  current_portfolio_value=state[name][scen]['capital'])
+                        live_new_weights = np.nan_to_num(live_new_weights, nan=0.0)
 
                     current_weights = np.zeros(len(self.asset_tickers))
-                    current_weights[active_mask] = live_new_weights"""
+                    current_weights[active_mask] = live_new_weights
 
-                    if np.allclose(current_weights, prev_weights[name], atol=2e-11, rtol=0): state[name][scen]['capital'] = prev_capital
+                    if np.allclose(current_weights, prev_weights[name][scen], atol=2e-11, rtol=0): state[name][scen]['capital'] = prev_capital
                     else:
                         sign_vector = np.sign(prev_capital * current_weights - prev_asset_values)
 
@@ -160,6 +159,10 @@ class PortfolioOB:
 
                         state[name][scen]['capital'] = solution_capital
 
+                    if (not key) and (scen == 'Lump'):
+                        all_time_weight[name] += current_weights
+                        if t_idx > 0: all_time_turnover[name] += np.sum(np.abs(solution_capital * current_weights - prev_asset_values))
+
                     dividend_accrued = state[name][scen]['capital'] * np.sum(current_weights[active_mask] * last_day_div)
                     if dividend_accrued > 0:
                         if t_idx + 15 < T: state[name][scen]["payout_queue"].append((t_idx + 15, dividend_accrued))
@@ -172,15 +175,25 @@ class PortfolioOB:
                             if t_idx + int(delist_row['Pay_lag']) < T: state[name][scen]["payout_queue"].append((t_idx + int(delist_row['Pay_lag']), state[name][scen]['capital'] * current_weights[ticker_to_idx[comp]] * float(delist_row['Amount'])))
                             elif (end_idx := last_t_in_global + (t_idx + 1 + int(delist_row['Pay_lag']) - T)) <= len(self.lqdt): state[name][scen]["payout_queue"].append((T - 1, state[name][scen]['capital'] * current_weights[ticker_to_idx[comp]] * float(delist_row['Amount']) / np.prod(1 + self.lqdt.iloc[last_t_in_global + 1: end_idx])))
                             else: state[name][scen]["payout_queue"].append((T - 1, state[name][scen]['capital'] * current_weights[ticker_to_idx[comp]] * float(delist_row['Amount']) / (np.mean(1 + self.lqdt.iloc[last_t_in_global - 4: last_t_in_global + 1])) ** (t_idx + 1 + int(delist_row['Pay_lag']) - T)))
+                            if float(delist_row['Amount']) > 0: state[name][scen]["prev_year_cap"] -= state[name][scen]['capital'] * current_weights[ticker_to_idx[comp]]
 
                     capital_growth = np.sum(current_weights * current_day_returns)
                     state[name][scen]['capital'] *= (1.0 + capital_growth)
                     res.loc[current_date, f'{name}_{scen}'] = state[name][scen]['capital']
 
-                prev_weights[name] = current_weights * (1.0 + current_day_returns)
-                prev_weights[name] = prev_weights[name] / np.sum(prev_weights[name])
+                    prev_weights[name][scen] = current_weights * (1.0 + current_day_returns)
+                    prev_weights[name][scen] = prev_weights[name][scen] / np.sum(prev_weights[name][scen])
                 bench_key = False
 
             for scen in active_scenarios: fix_сash_flow[scen] *= (1.0 + self.daily_inflation)
+
+        if not key:
+            new = not os.path.isfile('data/results/strat_csv/bonusinfo.csv')
+
+
+            with open('data/results/strat_csv/bonusinfo.csv', mode='a', newline='', encoding='utf-8') as f:
+                w = csv.writer(f)
+                if new: w.writerow(['name', 'turnover'] + self.asset_tickers)
+                for strat in self.strategies: w.writerow([strat.name, all_time_turnover[strat.name]] + list(all_time_weight[strat.name]/T))
 
         return res
