@@ -16,7 +16,7 @@ SLIDES = [
     "Вывод исследования"
 ]
 
-DATA_DIR = "data/result"
+DATA_DIR = "data/results"
 df_board = pd.read_csv('data/global_board_panel.csv', parse_dates=['Date']).set_index('Date')
 lqdt_series = df_board['Денежный рынок(LQDT)']
 
