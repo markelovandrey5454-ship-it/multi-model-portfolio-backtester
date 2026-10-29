@@ -123,7 +123,10 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
 
                     sortino_val = cagr_excess / (downside_std * np.sqrt(252)) if cagr_excess > 0 else cagr_excess * (downside_std * np.sqrt(252))
 
-                    labels_dict[col] = f"{base_name} (CAGR: {cagr_val * 100:.1f}%, Sortino: {sortino_val:.2f}, Calmar: {calmar_val:.2f})"
+                    if abs(sortino_val) < 0.01: sortino_str = f"{sortino_val:.3f}"
+                    else: sortino_str = f"{sortino_val:.2f}"
+                    
+                    labels_dict[col] = f"{base_name} (CAGR: {cagr_val * 100:.1f}%, Sortino: {sortino_val}, Calmar: {calmar_val:.2f})"
                 else: labels_dict[col] = f"{base_name} (CAGR: {((final_val / initial_cap) ** (252.0 / T_days) - 1.0) * 100.0:,.1f}%)"
             else: labels_dict[col] = f"{base_name} (Финальный капитал: {final_val:_.1f} руб.)"
 
