@@ -126,20 +126,23 @@ elif idx_active == 1:
         is_lump_mode = "Lumpsum" in selected_scen
 
         if "100 млн" in selected_scen:
-            file_path = os.path.join(DATA_DIR, "fond.csv")
+            file_path = os.path.join(DATA_DIR, "fond.parquet")
             suffix = "Lump"
         else:
-            file_path = os.path.join(DATA_DIR, "human.csv")
+            file_path = os.path.join(DATA_DIR, "human.parquet")
             suffix = "Lump" if "Lumpsum" in selected_scen else ("DCA" if "DCA" in selected_scen else "FIRE")
 
         if os.path.exists(file_path):
-            df_equity = pd.read_csv(file_path, parse_dates=['Date']).set_index('Date')
+            df_equity = pd.read_parquet(file_path).set_index('Date')
             T_days = len(df_equity)
 
             if is_lump_mode: fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.04, row_heights=[0.7, 0.3])
             else: fig = go.Figure()
 
             lqdt_aligned = load_lqdt()
+            df_pct = df_equity.pct_change().dropna()
+            lqdt_sub = lqdt_aligned.reindex(df_pct.index)
+            cagr_lqdt = np.exp(np.log1p(lqdt_sub).sum()) ** (252.0 / T_days) - 1.0
 
             for col in df_equity.columns:
                 if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(f"Inflation_Benchmark_{suffix}"):
@@ -156,20 +159,16 @@ elif idx_active == 1:
                             daily_pct = df_equity[col].pct_change().dropna()
                             cagr_val = (final_val / initial_cap) ** (252.0 / T_days) - 1.0
 
-                            cum_returns = (1 + daily_pct).cumprod()
-                            running_max = cum_returns.cummax()
-                            drawdowns = 1.0 - (cum_returns / running_max)
-                            initial_dd = 1.0 - cum_returns
-                            max_dd = max(drawdowns.max(), initial_dd.max(), 0.0)
+                            running_max = df_equity[col].cummax()
+                            drawdowns = 1.0 - df_equity[col] / running_max
+                            max_dd = drawdowns.max()
                             calmar_val = cagr_val / max_dd if max_dd > 0 else 0.0
 
-                            excess_r = df_equity[f"{col}_tf"].pct_change().dropna() - lqdt_aligned.loc[daily_pct.index]
-                            cagr_lqdt = np.exp(np.log1p(lqdt_aligned.loc[daily_pct.index]).sum()) ** (252.0 / T_days) - 1.0
+                            excess_r = df_pct[f"{col}_tf"] - lqdt_sub
                             cagr_excess = (df_equity[f"{col}_tf"].iloc[-1] / initial_cap) ** (252.0 / T_days) - 1.0 - cagr_lqdt
                             downside_r = np.minimum(0, excess_r)
                             downside_std = np.sqrt(np.mean(downside_r ** 2))
-                            if cagr_excess > 0: sortino_val = cagr_excess / (downside_std * np.sqrt(252))
-                            else: sortino_val = cagr_excess * (downside_std * np.sqrt(252))
+                            sortino_val = cagr_excess / (downside_std * np.sqrt(252)) if cagr_excess > 0 else cagr_excess * (downside_std * np.sqrt(252))
 
                             leg_label = f"{base_name} (CAGR: {cagr_val * 100:.1f}%, Sortino: {sortino_val:.2f}, Calmar: {calmar_val:.2f})"
                         else:
@@ -194,6 +193,7 @@ elif idx_active == 1:
                             y_transformed = np.copy(daily_pct)
                             y_transformed[large_mask] = np.sign(daily_pct[large_mask]) * 0.01 * (np.log10(np.abs(daily_pct[large_mask]) / 0.01) + 1)
                             fig.add_trace(trace_line, row=1, col=1)
+                            
                             if 'Inflation' not in col:
                                 fig.add_trace(go.Scattergl(
                                     x=df_equity.index[1:],
@@ -419,7 +419,7 @@ elif idx_active == 4:
                     x_title, y_title = "Индекс Ульцера UI (Временной износ фонда, %)", "Чистая Альфа Дженсена (Jensen's Alpha, % годовых)"
                     title_text = "Фазовое пространство регуляторного риска ЦБ (Контур Б)"
 
-                fig_scatter.add_trace(go.Scatter(
+                fig_scatter.add_trace(go.Scattergl(
                     x=x_vals,
                     y=y_vals,
                     mode='markers',
