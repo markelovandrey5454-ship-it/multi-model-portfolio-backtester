@@ -11,7 +11,8 @@ from benchmarks import (UniformStrategy, RandomMonkeyStrategy, MarkowitzStrategy
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - [%(levelname)s] - %(message)s')
 BASE32_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
-n = 250
+n = 300
+initial_capital = 1_000_000.0
 benchmark = ['Uniform 1/N', 'Random Monkey', 'Markowitz', 'Base CVaR', 'Stochastic Momentum']
 
 if __name__ == "__main__":
@@ -25,9 +26,10 @@ if __name__ == "__main__":
 
     fieldnames = [
         'start_date', 'end_date', 'window_length_days',
-        'cagr', 'sortino', 'jenser',
+        'cagr', 'cagr_taxless', 'sortino', 'jenser',
         'ulcer', 'max_drawdown', 'max_daily_drop',
-        'asset_count', 'encoded_assets'
+        'asset_count', 'encoded_assets',
+        'cagr_lqdt'
     ]
 
     print("=== ЗАПУСК СЛУЧАЙНОГО БЭКТЕСТА СИСТЕМЫ ===")
@@ -95,7 +97,7 @@ if __name__ == "__main__":
         results_df = ob.simulation(
             start_date=start,
             end_date=end,
-            initial_capital=1_000_000.0,
+            initial_capital=initial_capital,
             key=True,
             assets=assets_str
         )
@@ -109,8 +111,8 @@ if __name__ == "__main__":
             result = results_df[f'{name}_Lump']
             result_taxless = results_df[f'{name}_Lump_tf']
 
-            cagr = (result.iloc[-1] / result.iloc[0]) ** (252.0 / len(result)) - 1.0
-            cagr_taxless = (result_taxless.iloc[-1] / result_taxless.iloc[0]) ** (252.0 / len(result)) - 1.0
+            cagr = (result.iloc[-1] / initial_capital) ** (252.0 / len(result)) - 1.0
+            cagr_taxless = (result_taxless.iloc[-1] / initial_capital) ** (252.0 / len(result)) - 1.0
 
             r_t = result_taxless.pct_change().dropna()
 
@@ -120,8 +122,8 @@ if __name__ == "__main__":
             cov_matrix = np.cov(excess_r, excess_moex)
             beta = cov_matrix[0, 1] / (cov_matrix[1, 1] + 1e-12)
 
-            cagr_lqdt = np.exp(np.log1p(r_lqdt.loc[r_t.index]).sum()) ** (252.0 / len(result)) - 1.0
-            cagr_moex = np.exp(np.log1p(r_mcftrr.loc[r_t.index]).sum()) ** (252.0 / len(result)) - 1.0
+            cagr_lqdt = np.exp(np.log1p(r_lqdt.loc[r_t.index]).sum()) ** (252.0 / (len(result) - 1)) - 1.0
+            cagr_moex = np.exp(np.log1p(r_mcftrr.loc[r_t.index]).sum()) ** (252.0 / (len(result) - 1)) - 1.0
             cagr_excess = cagr_taxless - cagr_lqdt
 
             jenser = cagr_taxless - cagr_lqdt - beta * (cagr_moex - cagr_lqdt)
@@ -149,12 +151,15 @@ if __name__ == "__main__":
 
             max_daily_drop = min(np.min(r_t) * 100.0, 0.0)
 
-            metrics_dict = {'start_date': start, 'end_date': end, 'window_length_days': len(result),
-            'cagr': cagr * 100, 'sortino': sortino, 'jenser' : jenser * 100,
-            'ulcer': ulcer, 'max_drawdown': max_drawdown, 'max_daily_drop': max_daily_drop,
-            'asset_count': int(np.sum(random_bits) + 3), 'encoded_assets': encoded_assets}
+            metrics_dict = {
+                'start_date': start, 'end_date': end, 'window_length_days': len(result),
+                'cagr': cagr * 100, 'cagr_taxless': cagr_taxless * 100, 'sortino': sortino, 'jenser' : jenser * 100,
+                'ulcer': ulcer, 'max_drawdown': max_drawdown, 'max_daily_drop': max_daily_drop,
+                'asset_count': int(np.sum(random_bits) + 3), 'encoded_assets': encoded_assets,
+                'cagr_lqdt': cagr_lqdt * 100
+            }
 
-            filepath = f'data/results/test_{name.replace('/', '_')}.csv'
+            filepath = f'data/results/strat_csv/test_{name.replace('/', '_')}.csv'
             file_exists = os.path.isfile(filepath)
 
             with open(filepath, mode='a', newline='', encoding='utf-8') as f:
