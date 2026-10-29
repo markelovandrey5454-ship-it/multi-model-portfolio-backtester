@@ -16,8 +16,8 @@ SLIDES = [
     "Вывод исследования"
 ]
 
-DATA_DIR = "data/results/strat_csv"
-df_board = pd.read_csv('data/matrix/global_board_panel.csv', parse_dates=['Date']).set_index('Date')
+DATA_DIR = "data/result"
+df_board = pd.read_csv('data/global_board_panel.csv', parse_dates=['Date']).set_index('Date')
 lqdt_series = df_board['Денежный рынок(LQDT)']
 
 STRATEGY_COLORS = {
