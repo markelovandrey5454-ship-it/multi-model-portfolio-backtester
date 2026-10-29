@@ -650,10 +650,10 @@ st.components.v1.html(
 
 if prev_clicked:
     st.session_state.current_slide_index -= 1
-    st.query_params["slide"] = st.session_state.current_slide_index
+    st.query_params["slide"] = st.session_state.current_slide_index + 1
     st.rerun()
 
 if next_clicked:
     st.session_state.current_slide_index += 1
-    st.query_params["slide"] = st.session_state.current_slide_index
+    st.query_params["slide"] = st.session_state.current_slide_index + 1
     st.rerun()
