@@ -189,7 +189,7 @@ elif idx_active == 1:
             file_path = os.path.join(DATA_DIR, "human.parquet")
             suffix = "Lump" if "Lumpsum" in selected_scen else ("DCA" if "DCA" in selected_scen else "FIRE")
 
-        df_equity, precomputed_labels, df_pct_all, lqdt_sub = get_cached_slide_2_data(
+        df_equity, precomputed_labels, df_pct_all, lqdt_sub = load_and_calculate_equity(
             file_path, suffix, initial_cap, is_lump_mode
         )
 
