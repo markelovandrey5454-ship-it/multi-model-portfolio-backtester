@@ -94,7 +94,7 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
 
     lqdt_aligned = load_lqdt()
 
-    df_pct_all = df_equity.pct_change().dropna()
+    df_pct_all = df_equity.pct_change()
     lqdt_sub = lqdt_aligned.reindex(df_pct_all.index)
     cagr_lqdt = np.exp(np.log1p(lqdt_sub).sum()) ** (252.0 / T_days) - 1.0
 
@@ -117,7 +117,7 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
                     max_dd = max_dds[col]
                     calmar_val = cagr_val / max_dd if max_dd > 0 else 0.0
 
-                    excess_r = df_pct_all[f"{col}_tf"] - lqdt_sub
+                    excess_r = df_pct_all[f"{col}_tf"].dropna() - lqdt_sub
                     cagr_excess = (df_equity[f"{col}_tf"].iloc[-1] / initial_cap) ** (252.0 / T_days) - 1.0 - cagr_lqdt
                     downside_std = np.sqrt(np.mean(np.minimum(0, excess_r) ** 2))
 
@@ -205,7 +205,7 @@ elif idx_active == 1:
                     )
 
                     if is_lump_mode:
-                        daily_pct = df_pct_all[col]
+                        daily_pct = df_pct_all[col].dropna()
                         pct_vals = daily_pct.to_numpy()
                         abs_vals = np.abs(pct_vals)
 
