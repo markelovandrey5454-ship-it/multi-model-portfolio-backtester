@@ -179,7 +179,7 @@ elif idx_active == 1:
 
 
                     if not col.endswith("_tf"):
-                        trace_line = go.Scatter(
+                        trace_line = go.Scattergl(
                             x=df_equity.index,
                             y=df_equity[col],
                             mode='lines',
@@ -187,19 +187,6 @@ elif idx_active == 1:
                             legendgroup=col,
                             line=dict(color=color, width=2, dash=type_line),
                             hovertemplate='%{x|%Y-%m-%d}<br>Капитал: %{y:,.0f} руб<extra></extra>'
-                        )
-
-                        fig.update_layout(
-                            legend=dict(
-                                x=0.02,
-                                y=0.98,
-                                xanchor='left',
-                                yanchor='top',
-                                bgcolor='rgba(255, 255, 255, 0.8)',
-                                bordercolor='LightGray',
-                                borderwidth=1,
-                                tracegroupgap=0
-                            )
                         )
 
                         if is_lump_mode:
@@ -220,6 +207,19 @@ elif idx_active == 1:
                                     hovertemplate='%{x|%Y-%m-%d}<br>Дн. доходность: %{customdata:.2%}<extra></extra>'
                                 ), row=2, col=1)
                         else: fig.add_trace(trace_line)
+                            
+            fig.update_layout(
+                legend=dict(
+                    x=0.02,
+                    y=0.98,
+                    xanchor='left',
+                    yanchor='top',
+                    bgcolor='rgba(255, 255, 255, 0.8)',
+                    bordercolor='LightGray',
+                    borderwidth=1,
+                    tracegroupgap=0
+                )
+            )
 
             if is_lump_mode:
                 symlog_ticks = [-0.10, -0.05, 0.05, 0.10]
