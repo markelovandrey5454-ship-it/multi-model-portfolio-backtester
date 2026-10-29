@@ -17,9 +17,7 @@ SLIDES = [
 ]
 
 DATA_DIR = "data/results"
-df_board = pd.read_parquet('data/global_board_panel.parquet')
-df_board['Date'] = pd.to_datetime(df_board['Date'])
-df_board = df_board.set_index('Date')
+df_board = pd.read_parquet('data/global_board_panel.parquet').set_index('Date')
 lqdt_series = df_board['Денежный рынок(LQDT)']
 
 STRATEGY_COLORS = {
