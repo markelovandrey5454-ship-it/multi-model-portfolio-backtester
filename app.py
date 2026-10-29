@@ -521,10 +521,17 @@ elif idx_active == 5:
         elif regime == "Без 24.03.2022":
             df = df[~has_shock]
 
-        cagr = df.pivot_table(index=key, columns="Strategy", values="cagr_taxless", aggfunc="first")
-        jen = df.pivot_table(index=key, columns="Strategy", values="jenser", aggfunc="first")
-        dd = df.pivot_table(index=key, columns="Strategy", values="max_drawdown", aggfunc="first").abs()
-        ui = df.pivot_table(index=key, columns="Strategy", values="ulcer", aggfunc="first").abs()
+        pivot_df = df.pivot_table(
+            index=key, 
+            columns="Strategy", 
+            values=["cagr_taxless", "jenser", "max_drawdown", "ulcer"], 
+            aggfunc="first"
+        )
+
+        cagr = pivot_df["cagr_taxless"]
+        jen = pivot_df["jenser"]
+        dd = pivot_df["max_drawdown"].abs()
+        ui = pivot_df["ulcer"].abs()
         lq = df.groupby(key)["cagr_lqdt"].first()
 
         bench = [b for b in benchmarks if b in cagr.columns]
