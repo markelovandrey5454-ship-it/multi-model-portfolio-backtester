@@ -86,6 +86,64 @@ def load_lqdt():
     df_board = pd.read_parquet('data/global_board_panel.parquet').set_index('Date')
     return df_board['Денежный рынок(LQDT)']
 
+
+@st.cache_data
+def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
+    """
+    Функция загружает parquet-файл и один раз считает ВСЕ метрики
+    для всех стратегий. Результат кэшируется в памяти.
+    """
+    if not os.path.exists(file_path):
+        return None, {}
+
+    df_equity = pd.read_parquet(file_path).set_index('Date')
+    T_days = len(df_equity)
+    
+    lqdt_aligned = load_lqdt()
+    
+    df_pct_all = df_equity.pct_change().dropna()
+    lqdt_sub = lqdt_aligned.reindex(df_pct_all.index, method='ffill')
+    cagr_lqdt = np.exp(np.log1p(lqdt_sub).sum()) ** (252.0 / T_days) - 1.0
+    
+    running_maxes = df_equity.cummax()
+    drawdowns_all = 1.0 - df_equity / running_maxes
+    max_dds = drawdowns_all.max()
+
+    labels_dict = {}
+
+    for col in df_equity.columns:
+        if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(f"Inflation_Benchmark_{suffix}"):
+            if col.startswith("Inflation_Benchmark"):
+                base_name = "Inflation_Benchmark"
+            else:
+                base_name = col.split(f"_{suffix}")[0]
+
+            final_val = df_equity[col].iloc[-1]
+
+            if is_lump_mode:
+                if col.endswith('_Lump') and not 'Inflation' in col:
+                    cagr_val = (final_val / initial_cap) ** (252.0 / T_days) - 1.0
+                    max_dd = max_dds[col]
+                    calmar_val = cagr_val / max_dd if max_dd > 0 else 0.0
+
+                    excess_r = df_pct_all[f"{col}_tf"] - lqdt_sub
+                    cagr_excess = (df_equity[f"{col}_tf"].iloc[-1] / initial_cap) ** (252.0 / T_days) - 1.0 - cagr_lqdt
+                    downside_std = np.sqrt(np.mean(np.minimum(0, excess_r) ** 2))
+                    
+                    if downside_std > 0:
+                        sortino_val = cagr_excess / (downside_std * np.sqrt(252)) if cagr_excess > 0 else cagr_excess * (downside_std * np.sqrt(252))
+                    else:
+                        sortino_val = 0.0
+
+                    labels_dict[col] = f"{base_name} (CAGR: {cagr_val * 100:.1f}%, Sortino: {sortino_val:.2f}, Calmar: {calmar_val:.2f})"
+                else:
+                    labels_dict[col] = f"{base_name} (CAGR: {((final_val / initial_cap) ** (252.0 / T_days) - 1.0) * 100.0:,.1f}%)"
+            else:
+                labels_dict[col] = f"{base_name} (Финальный капитал: {final_val:_.1f} руб.)"
+
+    return df_equity, labels_dict
+
+
 idx_active = st.session_state.current_slide_index
 
 # ----------------- СЛАЙД 1 (Индекс 0) -----------------
@@ -121,7 +179,6 @@ elif idx_active == 1:
                         st.rerun()
 
         selected_scen = st.session_state.scen_mode
-
         initial_cap = 100_000_000.0 if "100 млн" in selected_scen else 1_000_000.0
         is_lump_mode = "Lumpsum" in selected_scen
 
@@ -132,129 +189,104 @@ elif idx_active == 1:
             file_path = os.path.join(DATA_DIR, "human.parquet")
             suffix = "Lump" if "Lumpsum" in selected_scen else ("DCA" if "DCA" in selected_scen else "FIRE")
 
-        if os.path.exists(file_path):
-            df_equity = pd.read_parquet(file_path).set_index('Date')
-            T_days = len(df_equity)
+        df_equity, precomputed_labels, df_pct_all, lqdt_sub = get_cached_slide_2_data(
+            file_path, suffix, initial_cap, is_lump_mode
+        )
 
-            if is_lump_mode: fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.04, row_heights=[0.7, 0.3])
-            else: fig = go.Figure()
+        if is_lump_mode:
+            fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.04, row_heights=[0.7, 0.3])
+        else:
+            fig = go.Figure()
 
-            lqdt_aligned = load_lqdt()
-            df_pct = df_equity.pct_change().dropna()
-            lqdt_sub = lqdt_aligned.reindex(df_pct.index)
-            cagr_lqdt = np.exp(np.log1p(lqdt_sub).sum()) ** (252.0 / T_days) - 1.0
+        for col in df_equity.columns:
+            if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(f"Inflation_Benchmark_{suffix}"):
+                if col.startswith("Inflation_Benchmark"): base_name = "Inflation_Benchmark"
+                else: base_name = col.split(f"_{suffix}")[0]
 
-            for col in df_equity.columns:
-                if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(f"Inflation_Benchmark_{suffix}"):
-                    if col.startswith("Inflation_Benchmark"): base_name = "Inflation_Benchmark"
-                    else: base_name = col.split(f"_{suffix}")[0]
+                color = STRATEGY_COLORS.get(base_name, '#000000')
+                type_line = 'dash' if 'Inflation' in col else 'solid'
+                leg_label = precomputed_labels.get(col, col)
 
-                    color = STRATEGY_COLORS.get(base_name, '#000000')
-                    type_line = 'dash' if 'Inflation' in col else 'solid'
-
-                    final_val = df_equity[col].iloc[-1]
+                if not col.endswith("_tf"):
+                    trace_line = go.Scattergl(
+                        x=df_equity.index,
+                        y=df_equity[col],
+                        mode='lines',
+                        name=leg_label,
+                        legendgroup=col,
+                        line=dict(color=color, width=2, dash=type_line),
+                        hovertemplate='%{x|%Y-%m-%d}<br>Капитал: %{y:,.0f} руб<extra></extra>'
+                    )
 
                     if is_lump_mode:
-                        if col.endswith('_Lump') and not 'Inflation' in col:
-                            daily_pct = df_equity[col].pct_change().dropna()
-                            cagr_val = (final_val / initial_cap) ** (252.0 / T_days) - 1.0
+                        daily_pct = df_pct_all[col]
+                        pct_vals = daily_pct.to_numpy()
+                        abs_vals = np.abs(pct_vals)
 
-                            running_max = df_equity[col].cummax()
-                            drawdowns = 1.0 - df_equity[col] / running_max
-                            max_dd = drawdowns.max()
-                            calmar_val = cagr_val / max_dd if max_dd > 0 else 0.0
-
-                            excess_r = df_pct[f"{col}_tf"] - lqdt_sub
-                            cagr_excess = (df_equity[f"{col}_tf"].iloc[-1] / initial_cap) ** (252.0 / T_days) - 1.0 - cagr_lqdt
-                            downside_r = np.minimum(0, excess_r)
-                            downside_std = np.sqrt(np.mean(downside_r ** 2))
-                            sortino_val = cagr_excess / (downside_std * np.sqrt(252)) if cagr_excess > 0 else cagr_excess * (downside_std * np.sqrt(252))
-
-                            leg_label = f"{base_name} (CAGR: {cagr_val * 100:.1f}%, Sortino: {sortino_val:.2f}, Calmar: {calmar_val:.2f})"
-                        else:
-                            leg_label = f"{base_name} (CAGR: {((final_val / initial_cap) ** (252.0 / T_days) - 1.0) * 100.0:,.1f}%)"
-                    else:
-                        leg_label = f"{base_name} (Финальный капитал: {final_val:_.1f} руб.)"
-
-
-                    if not col.endswith("_tf"):
-                        trace_line = go.Scattergl(
-                            x=df_equity.index,
-                            y=df_equity[col],
-                            mode='lines',
-                            name=leg_label,
-                            legendgroup=col,
-                            line=dict(color=color, width=2, dash=type_line),
-                            hovertemplate='%{x|%Y-%m-%d}<br>Капитал: %{y:,.0f} руб<extra></extra>'
+                        y_transformed = np.where(
+                            abs_vals > 0.01,
+                            np.sign(pct_vals) * 0.01 * (np.log10(abs_vals / 0.01) + 1),
+                            pct_vals
                         )
 
-                        if is_lump_mode:
-                            large_mask = np.abs(daily_pct) > 0.01
-                            y_transformed = np.copy(daily_pct)
-                            y_transformed[large_mask] = np.sign(daily_pct[large_mask]) * 0.01 * (np.log10(np.abs(daily_pct[large_mask]) / 0.01) + 1)
-                            fig.add_trace(trace_line, row=1, col=1)
-                            
-                            if 'Inflation' not in col:
-                                fig.add_trace(go.Scattergl(
-                                    x=df_equity.index[1:],
-                                    y=y_transformed,
-                                    customdata=daily_pct,
-                                    mode='markers',
-                                    name=leg_label,
-                                    legendgroup=col,
-                                    showlegend=False,
-                                    marker=dict(color=color, size=3, opacity=0.35),
-                                    hovertemplate='%{x|%Y-%m-%d}<br>Дн. доходность: %{customdata:.2%}<extra></extra>'
-                                ), row=2, col=1)
-                        else: fig.add_trace(trace_line)
-                            
-            fig.update_layout(
-                legend=dict(
-                    x=0.02,
-                    y=0.98,
-                    xanchor='left',
-                    yanchor='top',
-                    bgcolor='rgba(255, 255, 255, 0.8)',
-                    bordercolor='LightGray',
-                    borderwidth=1,
-                    tracegroupgap=0
-                )
+                        fig.add_trace(trace_line, row=1, col=1)
+
+                        if 'Inflation' not in col:
+                            fig.add_trace(go.Scattergl(
+                                x=df_equity.index[1:],
+                                y=y_transformed,
+                                customdata=daily_pct,
+                                mode='markers',
+                                name=leg_label,
+                                legendgroup=col,
+                                showlegend=False,
+                                marker=dict(color=color, size=3, opacity=0.35),
+                                hovertemplate='%{x|%Y-%m-%d}<br>Дн. доходность: %{customdata:.2%}<extra></extra>'
+                            ), row=2, col=1)
+                    else: fig.add_trace(trace_line)
+
+        fig.update_layout(
+            legend=dict(
+                x=0.02,
+                y=0.98,
+                xanchor='left',
+                yanchor='top',
+                bgcolor='rgba(255, 255, 255, 0.8)',
+                bordercolor='LightGray',
+                borderwidth=1,
+                tracegroupgap=0
             )
+        )
 
-            if is_lump_mode:
-                symlog_ticks = [-0.10, -0.05, 0.05, 0.10]
-                symlog_text = ["-10.0%", "-5.0%", "-1.0%", "0.0%", "1.0%", "5.0%", "10.0%"]
-                transformed_ticks = np.sign(symlog_ticks) * 0.01 * (np.log10(np.abs(symlog_ticks) / 0.01) + 1)
-                transformed_ticks = sorted(list(transformed_ticks) + [-0.01, 0.0, 0.01])
+        if is_lump_mode:
+            symlog_ticks = [-0.10, -0.05, 0.05, 0.10]
+            symlog_text = ["-10.0%", "-5.0%", "-1.0%", "0.0%", "1.0%", "5.0%", "10.0%"]
+            transformed_ticks = np.sign(symlog_ticks) * 0.01 * (np.log10(np.abs(symlog_ticks) / 0.01) + 1)
+            transformed_ticks = sorted(list(transformed_ticks) + [-0.01, 0.0, 0.01])
 
-                fig.update_layout(
-                    yaxis1=dict(title="Капитал (руб)", tickformat=",.0f", gridcolor="#E5E7EB"),
-                    yaxis2=dict(
-                        title="Дневная доходность",
-                        type="linear",
-                        tickvals=transformed_ticks,
-                        ticktext=symlog_text,
-                        zeroline=True,
-                        zerolinecolor="black",
-                        zerolinewidth=1
-                    ),
-                    height=780,
-                    hovermode="x unified"
-                )
-            else:
-                fig.update_layout(
-                    yaxis=dict(title="Капитал (руб)", tickformat=",.0f"),
-                    xaxis_title="Дата",
-                    height=620,
-                    hovermode="x unified"
-                )
+            fig.update_layout(
+                yaxis1=dict(title="Капитал (руб)", tickformat=",.0f", gridcolor="#E5E7EB"),
+                yaxis2=dict(
+                    title="Дневная доходность",
+                    type="linear",
+                    tickvals=transformed_ticks,
+                    ticktext=symlog_text,
+                    zeroline=True,
+                    zerolinecolor="black",
+                    zerolinewidth=1
+                ),
+                height=780,
+                hovermode="x unified"
+            )
+        else: fig.update_layout(
+                  yaxis=dict(title="Капитал (руб)", tickformat=",.0f"),
+                  xaxis_title="Дата",
+                  height=620,
+                  hovermode="x unified")
 
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.markdown(f"* **Тут описание стратегии {selected_scen}:** А тут текст про ее начальные данные")
 
-            st.markdown(f"""
-                * **Тут описание стратегии {selected_scen}:** А тут текст про ее начальные данные
-                """)
-        else: st.warning(f"Файл `{file_path}` не найден. Проверьте папку `{DATA_DIR}`.")
 
     render_slide_2()
 
