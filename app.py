@@ -84,7 +84,7 @@ def load_backtest_runs():
 @st.cache_data
 def load_lqdt():
     df_board = pd.read_parquet('data/global_board_panel.parquet').set_index('Date')
-    return lqdt_series = df_board['Денежный рынок(LQDT)']
+    return df_board['Денежный рынок(LQDT)']
 
 idx_active = st.session_state.current_slide_index
 
