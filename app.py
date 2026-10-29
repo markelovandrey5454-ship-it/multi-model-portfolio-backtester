@@ -65,13 +65,13 @@ st.markdown("---")
 @st.cache_data
 def load_backtest_runs():
     strategy_files = {
-        '0.1 prototype': 'test_0.1 prototype.csv',
-        'RankEnsemble_Frankenstein': 'test_RankEnsemble_Frankenstein.csv',
-        'Base CVaR': 'test_Base CVaR.csv',
-        'Markowitz': 'test_Markowitz.csv',
-        'Uniform 1/N': 'test_Uniform 1_N.csv',
-        'Random Monkey': 'test_Random Monkey.csv',
-        'Stochastic Momentum': 'test_Stochastic Momentum.csv'
+        '0.1 prototype': 'test_0.1 prototype.parquet',
+        'RankEnsemble_Frankenstein': 'test_RankEnsemble_Frankenstein.parquet',
+        'Base CVaR': 'test_Base CVaR.parquet',
+        'Markowitz': 'test_Markowitz.parquet',
+        'Uniform 1/N': 'test_Uniform 1_N.parquet',
+        'Random Monkey': 'test_Random Monkey.parquet',
+        'Stochastic Momentum': 'test_Stochastic Momentum.parquet'
     }
     combined = []
     for label, fname in strategy_files.items():
