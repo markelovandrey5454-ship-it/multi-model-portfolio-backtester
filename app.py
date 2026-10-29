@@ -617,7 +617,7 @@ elif idx_active == 5:
             if above.all():
                 verdict = "Лучше при любой цене риска"
             elif not above.any():
-                verdict = "Чуже при любой цене риска"
+                verdict = "Хуже при любой цене риска"
             else: verdict = f"λ* ≈ {grid[np.argmax(above[1:] != above[:-1]) + 1]:.2f}"
             lam_rows[b] = {"Вердикт": verdict,
                            "Гарантированная доля, %": round(100 * wins.min(), 1)}
