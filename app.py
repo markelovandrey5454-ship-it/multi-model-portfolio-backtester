@@ -89,13 +89,6 @@ def load_lqdt():
 
 @st.cache_data
 def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
-    """
-    Функция загружает parquet-файл и один раз считает ВСЕ метрики
-    для всех стратегий. Результат кэшируется в памяти.
-    """
-    if not os.path.exists(file_path):
-        return None, {}
-
     df_equity = pd.read_parquet(file_path).set_index('Date')
     T_days = len(df_equity)
     
@@ -141,7 +134,7 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
             else:
                 labels_dict[col] = f"{base_name} (Финальный капитал: {final_val:_.1f} руб.)"
 
-    return df_equity, labels_dict
+    return df_equity, labels_dict, df_pct_all
 
 
 idx_active = st.session_state.current_slide_index
@@ -189,7 +182,7 @@ elif idx_active == 1:
             file_path = os.path.join(DATA_DIR, "human.parquet")
             suffix = "Lump" if "Lumpsum" in selected_scen else ("DCA" if "DCA" in selected_scen else "FIRE")
 
-        df_equity, precomputed_labels, df_pct_all, lqdt_sub = load_and_calculate_equity(
+        df_equity, precomputed_labels, df_pct_all = load_and_calculate_equity(
             file_path, suffix, initial_cap, is_lump_mode
         )
 
