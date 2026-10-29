@@ -464,37 +464,14 @@ elif idx_active == 4:
                     hovertemplate=f"<b>Центр масс: {strat_name}</b><br>Медиана X: {median_x:.2f}%<br>Медиана Y: {median_y:.2f}%<extra></extra>"
                 ))
 
-                cov = np.cov(x_vals, y_vals)
-                mean_x = np.mean(x_vals)
-                mean_y = np.mean(y_vals)
-
-                eigenvalues, eigenvectors = np.linalg.eigh(cov)
-                order = eigenvalues.argsort()[::-1]
-                eigenvalues = eigenvalues[order]
-                eigenvectors = eigenvectors[:, order]
-
-                angle = np.degrees(np.arctan2(eigenvectors[1, 0], eigenvectors[0, 0]))
-
-                n_std = 2.45
-                rad_x = n_std * np.sqrt(np.maximum(eigenvalues[0], 0))
-                rad_y = n_std * np.sqrt(np.maximum(eigenvalues[1], 0))
-
-                theta = np.linspace(0, 360, 100)
-                ellipse_x = rad_x * np.cos(np.radians(theta))
-                ellipse_y = rad_y * np.sin(np.radians(theta))
-
-                cos_a = np.cos(np.radians(angle))
-                sin_a = np.sin(np.radians(angle))
-                R = np.array([[cos_a, -sin_a],
-                              [sin_a, cos_a]])
-
-                raw_points = np.column_stack([ellipse_x, ellipse_y])
-                ellipse_points = np.dot(raw_points, R.T)
-                ellipse_points[:, 0] += mean_x
-                ellipse_points[:, 1] += mean_y
+                vals, vecs = np.linalg.eigh(np.cov(x_vals, y_vals))
+                t = np.linspace(0, 2 * np.pi, 100)
+                pts = (vecs * (2.45 * np.sqrt(vals))) @ np.vstack([np.cos(t), np.sin(t)])
+                ex, ey = pts[0] + x_vals.mean(), pts[1] + y_vals.mean()
 
                 fig_scatter.add_trace(go.Scatter(
-                    x=ellipse_points[:, 0], y=ellipse_points[:, 1],
+                    x=ex, 
+                    y=ey,
                     mode='lines',
                     name=strat_name,
                     line=dict(color=color, width=1.5, dash='dash'),
