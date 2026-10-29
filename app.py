@@ -91,13 +91,13 @@ def load_lqdt():
 def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
     df_equity = pd.read_parquet(file_path).set_index('Date')
     T_days = len(df_equity)
-    
+
     lqdt_aligned = load_lqdt()
-    
+
     df_pct_all = df_equity.pct_change().dropna()
-    lqdt_sub = lqdt_aligned.reindex(df_pct_all.index, method='ffill')
+    lqdt_sub = lqdt_aligned.reindex(df_pct_all.index)
     cagr_lqdt = np.exp(np.log1p(lqdt_sub).sum()) ** (252.0 / T_days) - 1.0
-    
+
     running_maxes = df_equity.cummax()
     drawdowns_all = 1.0 - df_equity / running_maxes
     max_dds = drawdowns_all.max()
@@ -106,10 +106,8 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
 
     for col in df_equity.columns:
         if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(f"Inflation_Benchmark_{suffix}"):
-            if col.startswith("Inflation_Benchmark"):
-                base_name = "Inflation_Benchmark"
-            else:
-                base_name = col.split(f"_{suffix}")[0]
+            if col.startswith("Inflation_Benchmark"): base_name = "Inflation_Benchmark"
+            else: base_name = col.split(f"_{suffix}")[0]
 
             final_val = df_equity[col].iloc[-1]
 
@@ -122,17 +120,12 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
                     excess_r = df_pct_all[f"{col}_tf"] - lqdt_sub
                     cagr_excess = (df_equity[f"{col}_tf"].iloc[-1] / initial_cap) ** (252.0 / T_days) - 1.0 - cagr_lqdt
                     downside_std = np.sqrt(np.mean(np.minimum(0, excess_r) ** 2))
-                    
-                    if downside_std > 0:
-                        sortino_val = cagr_excess / (downside_std * np.sqrt(252)) if cagr_excess > 0 else cagr_excess * (downside_std * np.sqrt(252))
-                    else:
-                        sortino_val = 0.0
+
+                    sortino_val = cagr_excess / (downside_std * np.sqrt(252)) if cagr_excess > 0 else cagr_excess * (downside_std * np.sqrt(252))
 
                     labels_dict[col] = f"{base_name} (CAGR: {cagr_val * 100:.1f}%, Sortino: {sortino_val:.2f}, Calmar: {calmar_val:.2f})"
-                else:
-                    labels_dict[col] = f"{base_name} (CAGR: {((final_val / initial_cap) ** (252.0 / T_days) - 1.0) * 100.0:,.1f}%)"
-            else:
-                labels_dict[col] = f"{base_name} (Финальный капитал: {final_val:_.1f} руб.)"
+                else: labels_dict[col] = f"{base_name} (CAGR: {((final_val / initial_cap) ** (252.0 / T_days) - 1.0) * 100.0:,.1f}%)"
+            else: labels_dict[col] = f"{base_name} (Финальный капитал: {final_val:_.1f} руб.)"
 
     return df_equity, labels_dict, df_pct_all
 
