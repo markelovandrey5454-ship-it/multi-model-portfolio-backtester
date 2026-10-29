@@ -26,18 +26,14 @@ class UniformStrategy(BasePortfolioStrategy):
 class RandomMonkeyStrategy(BasePortfolioStrategy):
     def __init__(self):
         super().__init__(name="Random Monkey")
-        self._days_passed = 22
 
     def optimize_weights(self, historical_returns: pd.DataFrame, prev_weights: np.ndarray, volatility_history: pd.DataFrame,
                          volume_history: pd.DataFrame, current_portfolio_value: float) -> np.ndarray:
-        if self._days_passed // 22:
+        if (historical_returns.index[-1].month != historical_returns.index[-2].month) or (np.sum(prev_weights) == 0):
             N = historical_returns.shape[1]
             random_vectors = np.random.rand(N)
             weights = random_vectors / np.sum(random_vectors)
-            self._days_passed = 0
-        else:
-            self._days_passed += 1
-            weights = prev_weights
+        else: weights = prev_weights
 
         return weights
 
