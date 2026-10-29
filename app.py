@@ -77,7 +77,7 @@ def load_backtest_runs():
     for label, fname in strategy_files.items():
         path = os.path.join(DATA_DIR, fname)
         if os.path.exists(path):
-            df = pd.read_csv(path)
+            df = pd.read_parquet(path)
             df['Strategy'] = label
             combined.append(df)
     return pd.concat(combined, ignore_index=True)
