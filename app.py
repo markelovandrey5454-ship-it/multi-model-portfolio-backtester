@@ -17,8 +17,6 @@ SLIDES = [
 ]
 
 DATA_DIR = "data/results"
-df_board = pd.read_parquet('data/global_board_panel.parquet').set_index('Date')
-lqdt_series = df_board['Денежный рынок(LQDT)']
 
 STRATEGY_COLORS = {
     'Uniform 1/N': '#9E9E9E',
@@ -82,6 +80,12 @@ def load_backtest_runs():
             combined.append(df)
     return pd.concat(combined, ignore_index=True)
 
+
+@st.cache_data
+def load_lqdt():
+    df_board = pd.read_parquet('data/global_board_panel.parquet').set_index('Date')
+    return lqdt_series = df_board['Денежный рынок(LQDT)']
+
 idx_active = st.session_state.current_slide_index
 
 # ----------------- СЛАЙД 1 (Индекс 0) -----------------
@@ -135,7 +139,7 @@ elif idx_active == 1:
             if is_lump_mode: fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.04, row_heights=[0.7, 0.3])
             else: fig = go.Figure()
 
-            lqdt_aligned =  df_board['Денежный рынок(LQDT)']
+            lqdt_aligned = load_lqdt()
 
             for col in df_equity.columns:
                 if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(f"Inflation_Benchmark_{suffix}"):
