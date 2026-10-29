@@ -156,14 +156,11 @@ elif idx_active == 1:
                             daily_pct = df_equity[col].pct_change().dropna()
                             cagr_val = (final_val / initial_cap) ** (252.0 / T_days) - 1.0
 
-                            max_dd = 0.0
-                            cur_top = 1.0
-                            for daily_inc in daily_pct:
-                                cur_top *= 1 + daily_inc
-                                if cur_top >= 1.0:
-                                    cur_top = 1.0
-                                elif 1.0 - cur_top > max_dd:
-                                    max_dd = 1.0 - cur_top
+                            cum_returns = (1 + daily_pct).cumprod()
+                            running_max = cum_returns.cummax()
+                            drawdowns = 1.0 - (cum_returns / running_max)
+                            initial_dd = 1.0 - cum_returns
+                            max_dd = max(drawdowns.max(), initial_dd.max(), 0.0)
                             calmar_val = cagr_val / max_dd if max_dd > 0 else 0.0
 
                             excess_r = df_equity[f"{col}_tf"].pct_change().dropna() - lqdt_aligned.loc[daily_pct.index]
