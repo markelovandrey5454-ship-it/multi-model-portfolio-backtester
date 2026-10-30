@@ -582,7 +582,6 @@ elif idx_active == 5:
             legend=dict(orientation="h", x=0.15, y=-0.15)
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-        #st.dataframe(pd.DataFrame(rows, index=CATS).T.round(1), use_container_width=True)
         st.caption(f"«Победа/Поражение» — разность k не меньше {low}-го перцентиля шума ({lo:.4f}), «Уверенная победа/поражение» — не меньше 99.9-го ({hi:.4f}).  \n"
             "Шум — разность Uniform 1/N и Random Monkey на тех же окнах (верхняя строка показывает, распределение разности этих стратегий)")
 
