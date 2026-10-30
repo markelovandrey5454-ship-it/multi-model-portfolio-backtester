@@ -145,10 +145,10 @@ if idx_active == 0:
         if "info_mode" not in st.session_state:
             st.session_state.info_mode = "Контур очистки и нормализации данных"
 
+        st.info("💡 **Пояснения к проделанной работе:**")
         info_options = ["Контур очистки и нормализации данных", "Инфраструктурный контур бэктестирования", "Архитектура оцениваемых моделей"]
         cols_info = st.columns(len(info_options))
-
-        st.info("💡 **Пояснения к проделанной работе:**")
+        
         for m_idx, m_name in enumerate(info_options):
             with cols_info[m_idx]:
                 if st.session_state.info_mode == m_name:
