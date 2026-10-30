@@ -148,8 +148,7 @@ if idx_active == 0:
         info_options = ["Контур очистки и нормализации данных", "Инфраструктурный контур бэктестирования", "Архитектура оцениваемых моделей"]
         cols_info = st.columns(len(info_options))
 
-        st.info("💡 **Пояснения к проделанной работе:**"
-               for m_idx, m_name in enumerate(info_options):
+        st.info(for m_idx, m_name in enumerate(info_options):
                     with cols_info[m_idx]:
                         if st.session_state.info_mode == m_name:
                             st.button(m_name, key=f"scen_btn_{m_idx}", type="primary", use_container_width=True)
