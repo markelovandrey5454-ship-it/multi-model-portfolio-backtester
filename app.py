@@ -137,8 +137,7 @@ idx_active = st.session_state.current_slide_index
 
 # ----------------- СЛАЙД 1 (Индекс 0) -----------------
 if idx_active == 0:
-    st.title("📊 Стратегии оптимизации портфеля на Мосбирже")
-    st.subheader("Построение надежного инвестиционного полигона")
+    st.title("📊 Построение надежного инвестиционного полигона")
 
     @st.fragment
     def render_slide_1():
@@ -157,11 +156,21 @@ if idx_active == 0:
                     if st.button(m_name, key=f"scen_btn_{m_idx}", type="secondary", use_container_width=True):
                         st.session_state.info_mode = m_name
                         st.rerun()
-                        
-        st.markdown("""
-        * **Тут про подход к исследованию:** А тут текст
-        * **Тут про стратегии:** И тут текст
-        """)
+        if st.session_state.info_mode == "Контур очистки и нормализации данных":         
+            st.markdown("""
+            * **Тут про подход к исследованию:** А тут текст
+            * **Тут про стратегии:** И тут текст
+            """)
+        elif st.session_state.info_mode == "Инфраструктурный контур бэктестирования":  
+            st.markdown("""
+            * **Тут про подход к исследованию:** А тут текст
+            * **Тут про стратегии:** [ttk
+            """)
+        elif st.session_state.info_mode == "Архитектура оцениваемых моделей":
+            st.markdown("""
+            * **Тут про подход к исследованию:** А тут текст
+            * **Тут про стратегии:** [ttk3
+            """)
 
     render_slide_1()
 
