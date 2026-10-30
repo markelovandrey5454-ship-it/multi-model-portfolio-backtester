@@ -142,6 +142,11 @@ if idx_active == 0:
 
     @st.fragment
     def render_slide_1():
+        if "info_mode" not in st.session_state:
+            st.session_state.info_mode = "Контур очистки и нормализации данных"
+
+        info_options = ["Контур очистки и нормализации данных", "Инфраструктурный контур бэктестирования", "Архитектура оцениваемых моделей"]
+        cols_info = st.columns(len(info_options))
 
         st.info("💡 **Пояснения к проделанной работе:**")
         st.markdown("""
