@@ -4,3 +4,9 @@ backgroundColor = "#ffffff"
 secondaryBackgroundColor = "#f0f2f6"
 textColor = "#31333f"
 font = "sans serif"
+
+[client]
+showErrorDetails = false
+
+[ui]
+hideTopBar = true
