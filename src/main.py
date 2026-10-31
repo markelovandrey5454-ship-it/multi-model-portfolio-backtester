@@ -1,7 +1,6 @@
 from backtest_engine import PortfolioOB
 from visualizer import PortfolioVisualizer
 from benchmarks import (UniformStrategy, RandomMonkeyStrategy, StochasticMomentumStrategy, MarkowitzStrategy, BaseCVaRStrategy,
-                        RobustParabolicCvarStrategy_old, RobustParabolicCvarStrategy_new, RobustParabolicCvarStrategy_medium,
                         ML_RankEnsemble_Frankenstein)
 
 import pandas as pd
@@ -25,9 +24,6 @@ if __name__ == "__main__":
         StochasticMomentumStrategy(),
         BaseCVaRStrategy(),
         MarkowitzStrategy(),
-        #RobustParabolicCvarStrategy_old(),
-        #RobustParabolicCvarStrategy_new(),
-        RobustParabolicCvarStrategy_medium(),
         ML_RankEnsemble_Frankenstein()
     ]
 
