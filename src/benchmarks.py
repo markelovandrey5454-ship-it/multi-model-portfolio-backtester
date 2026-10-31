@@ -407,33 +407,3 @@ class ML_RankEnsemble_Frankenstein(BasePortfolioStrategy):
         prob = cp.Problem(objective, constraints)
         prob.solve(warm_start=True)
         return w.value
-
-
-class RobustParabolicCvarStrategy_new(BasePortfolioStrategy):
-    def __init__(self, name: str = "Controlled-risk prototype"):
-        super().__init__(name=name)
-        self.commission = commission
-        self.max_horizon = 1000
-
-    def _generate_parabolic_kernel_weights(self, returns_np: np.ndarray, vol_matrix_np: np.ndarray) -> np.ndarray:
-        raise NotImplementedError()
-
-
-class RobustParabolicCvarStrategy_old(BasePortfolioStrategy):
-    def __init__(self, name: str = "High-risk prototype"):
-        super().__init__(name=name)
-        self.commission = commission
-        self.max_horizon = 1000
-
-    def _generate_parabolic_kernel_weights(self, returns_np: np.ndarray, vol_matrix_np: np.ndarray) -> np.ndarray:
-        raise NotImplementedError()
-
-
-class RobustParabolicCvarStrategy_medium(BasePortfolioStrategy):
-    def __init__(self, name: str = "0.1 prototype"):
-        super().__init__(name=name)
-        self.commission = commission
-        self.max_horizon = 1000
-
-    def _generate_parabolic_kernel_weights(self, returns_np: np.ndarray, vol_matrix_np: np.ndarray) -> np.ndarray:
-        raise NotImplementedError()
