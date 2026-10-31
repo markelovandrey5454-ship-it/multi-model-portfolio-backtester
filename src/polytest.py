@@ -7,7 +7,7 @@ from backtest_engine import PortfolioOB
 import os
 import csv
 from benchmarks import (UniformStrategy, RandomMonkeyStrategy, MarkowitzStrategy, BaseCVaRStrategy, StochasticMomentumStrategy,
-                        ML_RankEnsemble_Frankenstein, RobustParabolicCvarStrategy_medium)
+                        ML_RankEnsemble_Frankenstein)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - [%(levelname)s] - %(message)s')
 BASE32_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
