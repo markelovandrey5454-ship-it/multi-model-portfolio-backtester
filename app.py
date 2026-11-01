@@ -419,8 +419,9 @@ elif idx_active == 1:
                         st.rerun()
 
         selected_scen = st.session_state.scen_mode
-        initial_cap = 100_000_000.0 if "100 млн" in selected_scen else 1_000_000.0
+        fond_key = "100" in selected_scen
         is_lump_mode = "Lumpsum" in selected_scen
+        initial_cap = 100_000_000.0 if fond_key else 1_000_000.0
 
         if "100 млн" in selected_scen:
             file_path = os.path.join(DATA_DIR, "fond.parquet")
@@ -530,7 +531,19 @@ elif idx_active == 1:
                 hovermode="x unified")
 
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-        st.markdown(f"* **Тут описание стратегии {selected_scen}:** А тут текст про ее начальные данные")
+
+        if is_lump_mode:
+            st.markdown(f"""* **{selected_scen}:** Начальный капитал {"100 000 000" if fond_key else "1 000 000"} руб. Инвестирован единовременно на начальной точке трека без последующих пополнений или изъятий 
+            для оценки эффективности стратегий на уровне {"крупного фонда" if fond_key else "частного инвестора"}""")
+            st.markdown("""
+            * **Описание графика:** 
+            <span style="text-indent: 20px; display: inline-block;">  1. Верхняя часть отображает динамику стоимости чистых активов портфеля с учетом обязательного автоматического реинвестирования.
+            <span style="text-indent: 20px; display: inline-block;">  2. Нижняя часть показывает доходности каждой торговой сессии на логарифмической шкале без учета удержания ежегодного налога на прирост капитала.</span>
+            """, unsafe_allow_html=True)
+        else:
+            if "DCA" in selected_scen: st.markdown(f"* **{selected_scen}:** Начальный капитал 50 000 руб. Ежемесячное пополнение на базовую сумму 50 000 руб., которая динамически индексируется на величину накопленной инфляции.")
+            elif "FIRE" in selected_scen: st.markdown(f"* **{selected_scen}:** Начальный капитал 6 000 000 руб. Ежемесячное изъятие средств для жизни на капитал составляет 60 000 руб., которая динамически индексируется на величину накопленной инфляции.")
+            st.markdown("* **Описание графика:** Отображает динамику стоимости чистых активов портфеля с учетом обязательного автоматического реинвестирования.")
 
 
     render_slide_2()
@@ -564,37 +577,52 @@ elif idx_active == 2:
         metric = st.session_state.active_metric
         df_runs = load_backtest_runs()
 
-        if not df_runs.empty:
-            zoom_izraelson = False
-            if metric == 'sortino':
-                zoom_izraelson = st.checkbox(
-                    "🔬 Оптимизировать масштаб оси под модификацию Израильсона (приблизить отрицательные хвосты)",
-                    value=False
-                )
-
-            fig_box = px.box(
-                df_runs,
-                x='Strategy',
-                y=metric,
-                color='Strategy',
-                color_discrete_map=STRATEGY_COLORS,
-                title=f"Распределение метрики: {metrics_map[metric]}"
+        zoom_izraelson = False
+        if metric == 'sortino':
+            zoom_izraelson = st.checkbox(
+                "🔬 Оптимизировать масштаб оси под модификацию Израильсона (приблизить отрицательные хвосты)",
+                value=False
             )
 
-            fig_box.update_layout(
-                showlegend=False,
-                yaxis_title=metrics_map[metric],
-                xaxis_title="Модель оптимизации"
-            )
+        fig_box = px.box(
+            df_runs,
+            x='Strategy',
+            y=metric,
+            color='Strategy',
+            color_discrete_map=STRATEGY_COLORS,
+            title=f"Распределение метрики: {metrics_map[metric]}"
+        )
 
-            if metric == 'sortino' and zoom_izraelson:
-                fig_box.update_layout(yaxis=dict(range=[df_runs['sortino'].min() - 0.01, 0.01]))
-                st.caption(
-                    f"ℹ️ *Используется верхняя граница в {0.01} для корректного отображения хвоста распределения (искаженным из-за коррективы Израильсона).*")
+        fig_box.update_layout(
+            showlegend=False,
+            yaxis_title=metrics_map[metric],
+            xaxis_title="Модель оптимизации"
+        )
 
-            st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
-        else:
-            st.warning("Файлы `test_*.csv` не найдены в папке `data/results/`.")
+        if metric == 'sortino' and zoom_izraelson:
+            fig_box.update_layout(yaxis=dict(range=[df_runs['sortino'].min() - 0.01, 0.01]))
+            st.caption(f"ℹ️ *Используется верхняя граница в {0.01} для корректного отображения хвоста распределения (искаженным из-за коррективы Израильсона).*")
+
+        st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
+        if metric == 'cagr':
+            st.markdown("""
+            * **Экономический смысл:** Среднегодовой темп роста чистой стоимости активов с учетом сложного процента.
+            * **Математический аппарат:** 
+            """)
+            st.latex(r"\text{CAGR}=\left(\frac{S_{\text{terminal}}}{S_{\text{initial}}}\right)^{\frac{252}{T}}-1")
+            st.info("💡На графике величина приведена к процентному масштабу.")
+        elif metric == 'sortino':
+            st.markdown("""
+            * **Экономический смысл:** 
+            """)
+            st.latex(r"\sum _{i=1}^{N}w_{i,t}=1.0")
+        elif metric == 'jenser':
+            st.markdown("""
+            * **Экономический смысл:** 
+            """)
+            st.markdown("""
+
+                        """)
 
 
     render_slide_3()
@@ -647,7 +675,12 @@ elif idx_active == 3:
                 hovermode="closest"
             )
 
-            fig_violin.update_traces(spanmode='hard')
+            fig_violin.update_traces(
+                marker=dict(
+                    size=2
+                ),
+                spanmode='hard'
+            )
 
             st.plotly_chart(fig_violin, use_container_width=True, config={'displayModeBar': False})
         else:
@@ -703,21 +736,21 @@ elif idx_active == 4:
                     x_title, y_title = "Индекс Ульцера UI (Временной износ фонда, %)", "Чистая Альфа Дженсена (Jensen's Alpha, % годовых)"
                     title_text = "Фазовое пространство регуляторного риска ЦБ (Контур Б)"
 
-                fig_scatter.add_trace(go.Scattergl(
+                fig_scatter.add_trace(go.Scatter(
                     x=x_vals,
                     y=y_vals,
                     mode='markers',
                     name=strat_name,
                     legendgroup=strat_name,
                     showlegend=False,
-                    marker=dict(color=color, size=5, opacity=0.4),
+                    marker=dict(color=color, size=3),
                     hovertemplate=f"<b>{strat_name}</b><br>{x_title}: %{{x:.2f}}%<br>{y_title}: %{{y:.2f}}%<extra></extra>"
                 ))
 
                 median_x = np.median(x_vals)
                 median_y = np.median(y_vals)
 
-                fig_scatter.add_trace(go.Scatter(
+                fig_scatter.add_trace(go.Scattergl(
                     x=[median_x], y=[median_y],
                     mode='markers',
                     name=f"{strat_name}",
