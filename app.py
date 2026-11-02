@@ -810,18 +810,20 @@ elif idx_active == 4:
         )
 
         st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
-        if contour_mode == 'contour_a':
+
+        if contour_mode == "contour_a":
             st.markdown("""
-            **Математический комплаенс осей:**
+            **Координаты:** Избыточная доходность (разность CAGR относительно LQDT) к пиковому риску (максимальная просадка).
             """)
-            st.latex(r"")
-            st.info("💡На графике величина приведена к процентному масштабу.")
-        elif contour_mode == 'contour_b':
+        elif contour_mode == "contour_b":
             st.markdown("""
-            
+            **Координаты:** Эффективность относительно рынка (альфа Дженсена) к временному износу капитала (индекс Ульцера).
             """)
-            st.latex(r"")
-            st.info("💡На графике величина приведена к процентному масштабу.")
+        st.markdown(f"""
+        **Визуальный базис:**  \n  
+        * **Медианный центр масс (◼):** Квадратный маркер фиксирует геометрический центр распределения результатов по независимым медианам осей. Применение медианы изолирует центр распределения от смещений, вызванных единичными экстремальными рыночными сессиями.
+        * **Доверительный эллипс распреления (Пунктир):** Задает 95%-ю границу двумерной локализации исходов во всех инвестиционных прогонах. Направление наклона, геометрия и площадь эллипса определяются собственными векторами и значениями выборочной ковариационной матрицы парных метрик, масштабированными через критический квантиль распределения Чи-квадрат.
+        """)
 
 
     render_slide_5()
@@ -842,6 +844,21 @@ elif idx_active == 5:
         p = c2.select_slider("Степень жесткости риска (p)", options=[1.0, 1.5, 2.0], value=2.0)
         low = c3.slider("Порог «победы» (перцентиль шума)", 75, 95, 80)
         regime = c4.radio("Окна", ["Все", "С 24.03.2022", "Без 24.03.2022"])
+
+        st.markdown(f"""
+        **Математический базис контура:** Для кросс-секционного сопоставления результатов на скользящих окнах избыточная доходность стратегии нормируется на принятый хвостовой риск, возведенный в степень жесткости (p). Формула K-оценки автоматически перестраивается в зависимости от выбранного аналитического контура:
+        """)
+        if contour == "A":
+            st.latex(r"K_n=\frac{\text{CAGR}_{\text{taxless},n}-\text{CAGR}_{\text{lqdt},n}}{\text{MaxDD}_n^p}")
+            st.markdown(f"""
+            Оценивает премию за риск (разность геометрического темпа роста безналогового трека и безрискового кэш-бенчмарка LQDT) на единицу пикового убытка.
+            """)
+        elif contour == "B":
+            st.latex(r"K_n=\frac{\text{Jensen}_n}{\text{Ulcer}_n^p}")
+            st.markdown(f"""
+            Оценивает аннуализированную Альфу Дженсена (избыточную доходность, очищенную от системного рыночного риска портфеля) на единицу износа капитала.
+            """)
+
         model = st.radio("Модель", target_models, horizontal=True)
 
         has_shock = (df["start_date"] < "2022-03-24") & (df["end_date"] >= "2022-03-24")
@@ -889,7 +906,7 @@ elif idx_active == 5:
         worst = np.min(codes, axis=0)
         rows["1vsAll: худшая среди бенчмарков"] = [100 * np.mean(worst == i) for i in range(5)]
 
-        st.subheader("Как часто и насколько решительно модель обгоняет бенчмарк")
+        st.subheader("Частотный анализ робастности модели против эталона рыночного шума")
         fig = go.Figure()
         start = {n: -(r[0] + r[1] + r[2] / 2) for n, r in rows.items()}
         for i, (cat, color) in enumerate(
@@ -914,29 +931,101 @@ elif idx_active == 5:
             legend=dict(orientation="h", x=0.15, y=-0.15)
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-        st.caption(
-            f"«Победа/Поражение» — разность k не меньше {low}-го перцентиля шума ({lo:.4f}), «Уверенная победа/поражение» — не меньше 99.9-го ({hi:.4f}).  \n"
-            "Шум — разность Uniform 1/N и Random Monkey на тех же окнах (верхняя строка показывает, распределение разности этих стратегий)")
 
-        st.subheader("Цена риска: при каком отношении к риску вердикт меняется")
-        grid = np.arange(1, 12.01, 0.05)
-        lam_rows = {}
+        st.markdown(f"""
+        * **Природа эталона шума:** Верхняя строка формируется как разность коэффициентов эффективности K между базовыми пассивными стратегиями Uniform 1/N и Random Monkey. 
+        Использование данных бенчмарков обусловлено идентичностью их пассивной инвестиционной логики, что позволяет изолировать чистый фон стохастических колебаний Мосбиржи на скользящих интервалах.
+        * **Итоговые оценки:** Порог «Победа/Поражение» фиксирует выход дельты стратегий за пределы {low}-го перцентиля распределения шума. Порог «Уверенная победа/Поражение» определяется 99.9-м перцентилем шума, 
+        подтверждая статистически значимое превосходство алгоритма на фоне шума. Строка **1vsAll** представляет собой агрегированный стресс-тест, фиксирующий долю окон, на которых модель одновременно опередила абсолютно все доступные бенчмарки выборки.
+        """)
+
+        st.subheader("Границы стратегического доминирования для разных профилей инвесторов")
+        st.markdown(f"""
+        **Математический базис контура:** Анализ устойчивости инвестиционного превосходства в рамках максимизации функции полезности:
+        """)
+        st.latex(r"F = \Delta \text{Return} - \lambda \cdot \Delta \text{Risk}")
+
+        grid = {
+            "сверх-агрессивного": np.linspace(0, 0.5, 11),
+            "агрессивного": np.linspace(0.5, 1.25, 11),
+            "сбалансированного": np.linspace(1.25, 2.5, 11),
+            "консервативного": np.linspace(2.5, 5, 11),
+            "сверх-консервативного": np.linspace(5, 20, 11),
+        }
+
+        html_table = """
+        <table style="width:100%; border-collapse: collapse; font-family: inherit; font-size: 14px; table-layout: fixed;">
+            <thead>
+                <tr style="background-color: rgba(49, 51, 63, 0.05); border-bottom: 2px solid rgba(49, 51, 63, 0.1);">
+                    <th style="width: 20%; text-align: left; padding: 10px;">Стратегия</th>
+                    <th style="width: 65%; text-align: left; padding: 10px;">Вердикт</th>
+                    <th style="width: 15%; text-align: center; padding: 10px;">Гарантированная доля побед, %</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
         for b in bench:
-            dc = (ret[model] - ret[b]).reindex(K.index).to_numpy()
-            dr = (risk[model] - risk[b]).reindex(K.index).to_numpy()
-            wins = ((dc[None, :] - grid[:, None] * dr[None, :]) > 0).mean(axis=1)
-            above = wins > 0.5
-            if above.all():
-                verdict = "Лучше при любой цене риска"
-            elif not above.any():
-                verdict = "Хуже при любой цене риска"
+            wins_all = 1.0
+            verdict_pos = []
+            verdict_med = []
+            verdict_neg = []
+
+            for inv, num in grid.items():
+                dc = (ret[model] - ret[b]).reindex(K.index).to_numpy()
+                dr = (risk[model] - risk[b]).reindex(K.index).to_numpy()
+                wins = ((dc[None, :] - num[:, None] * dr[None, :]) > 0).mean(axis=1)
+                above = wins > 0.5
+                if above.all(): verdict_pos.append(inv)
+                elif not above.any(): verdict_neg.append(inv)
+                else: verdict_med.append((inv, num[np.argmax(above[1:] != above[:-1]) + 1]))
+                wins_all = min(wins_all, wins.min())
+
+            verdicts = []
+
+            if len(verdict_pos) == 5: verdicts.append("Лучше для любого типа инвестора;")
+            elif len(verdict_neg) == 5: verdicts.append("Хуже для любого типа инвестора;")
             else:
-                verdict = f"λ* ≈ {grid[np.argmax(above[1:] != above[:-1]) + 1]:.2f}"
-            lam_rows[b] = {"Вердикт": verdict,
-                           "Гарантированная доля, %": round(100 * wins.min(), 1)}
-        st.dataframe(pd.DataFrame(lam_rows).T, use_container_width=True)
-        st.caption(
-            f"λ — сколько п.п. «{ret_name}» инвестор готов отдать за 1 п.п. «{risk_name}». Гарантированная доля — минимум доли побед по всем λ.")
+                if verdict_pos:
+                    verdicts.append(f"Лучше для {', '.join(verdict_pos)};")
+                if verdict_med:
+                    for tp, val in verdict_med:
+                        verdicts.append(f"Сопоставим для {tp} при λ* ≈ {val:.2f};")
+                if verdict_neg:
+                    verdicts.append(f"Хуже для {', '.join(verdict_neg)};")
+
+            row_count = len(verdicts)
+            share_val = round(100 * wins_all, 2)
+
+            for i, text in enumerate(verdicts):
+                html_table += ("<tr style='border-bottom: 1px solid rgba(49, 51, 63, 0.08);'>")
+
+                if i == 0: html_table += f'<td rowspan="{row_count}" style="padding: 12px 10px; font-weight: bold; vertical-align: middle; background: white; border-right: 1px solid rgba(49, 51, 63, 0.05);">{b}</td>'
+
+                html_table += f'<td style="padding: 10px; white-space: normal; word-wrap: break-word; vertical-align: middle;">{text}</td>'
+
+                if i == 0: html_table += f'<td rowspan="{row_count}" style="padding: 12px 10px; text-align: center; vertical-align: middle; background: white;">{share_val:.2f}</td>'
+
+                html_table += "</tr>"
+
+        html_table += "</tbody></table>"
+        st.markdown(html_table, unsafe_allow_html=True)
+        st.markdown("""
+        * **Экономическая классификация инвестиционных профилей:**  \n  
+        <span style="text-indent: 32px; display: inline-block;">   **Сверх-агрессивный (λ ≤ 0.5):** Фокус на чистой Альфе и CAGR без штрафа за просадки.  \n  
+        <span style="text-indent: 32px; display: inline-block;">   **Агрессивный (0.05 < λ ≤ 1.25):** Высокий приоритет доходности при умеренном учете рисков.  \n  
+        <span style="text-indent: 32px; display: inline-block;">   **Сбалансированный (1.25 < λ ≤ 2.5):** Равновесная оценка темпа роста и хвостовых шоков портфеля.  \n  
+        <span style="text-indent: 32px; display: inline-block;">   **Консервативный (2.5 < λ ≤ 5.0):** Повышенный штраф за пиковые убытки капитала.  \n  
+        <span style="text-indent: 32px; display: inline-block;">   **Сверх-консервативный (λ > 5.0):** Максимальное неприятие риска и времени нахождения под стрессом.  \n  
+        """, unsafe_allow_html=True)
+        st.markdown("""
+        * **Статистический смысл таблицы:**  \n  
+        <span style="text-indent: 32px; display: inline-block;">  **Колонка «Вердикт»:** Консолидирует дискретные решения по каждому профилю риска. Выводит перечень профилей, 
+        где модель безусловно выигрывает бенчмарк (доля побед по окнам >= 50%), проигрывает ему или оказывается сопоставимой с фиксацией точной критической точки перелома знака полезности (λ*), 
+        при которой доминирование меняется на противоположное.  \n  
+        <span style="text-indent: 32px; display: inline-block;">  **Колонка «Гарантированная доля побед»:** Отображает абсолютный минимум устойчивости торговой системы. 
+        Фиксирует наименьшую долю успешных исходов модели среди всех доступных окон текущей выборки при самом неблагоприятном (максимально штрафующем модель) значении параметра из всех пяти оцениваемых профилей риска.
+        """, unsafe_allow_html=True)
 
 
     render_slide_6()
