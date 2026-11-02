@@ -609,20 +609,27 @@ elif idx_active == 2:
             * **Экономический смысл:** Среднегодовой темп роста чистой стоимости активов с учетом сложного процента.
             * **Математический аппарат:** 
             """)
-            st.latex(r"\text{CAGR}=\left(\frac{S_{\text{terminal}}}{S_{\text{initial}}}\right)^{\frac{252}{T}}-1")
+            st.latex(r"\text{CAGR}=\left(\frac{S_{T}}{S_{0}}\right)^{\frac{252}{T}}-1")
             st.info("💡На графике величина приведена к процентному масштабу.")
         elif metric == 'sortino':
             st.markdown("""
-            * **Экономический смысл:** 
+            * **Экономический смысл:** Коэффициент Сортино, оценивающий величину избыточной доходности стратегии над безрисковой ставкой (LQDT в данном исследовании) в расчете на единицу волатильности исключительно отрицательных хвостовых отклонений относительно 0.
+            * **Математический аппарат:** Расчет опирается на вектор избыточных сессионных доходностей безналогового трека:
             """)
-            st.latex(r"\sum _{i=1}^{N}w_{i,t}=1.0")
+            st.latex(r"\sigma _{\text{downside}}=\sqrt{\frac{252}{T}\sum _{t=1}^{T}\text{min}^{2} (0,r_t - r_{\text{LQDT}, t})}")
+            st.latex(r"\text{Sortino}=\begin{cases}\frac{\text{CAGR}_{\text{excess}}}{\sigma _{\text{downside}}},&\text{если CAGR}_{\text{excess}}>0\\ \text{CAGR}_{\text{excess}}\cdot \sigma _{\text{downside}},&\text{если CAGR}_{\text{excess}}\le 0\end{cases}, где \ \text{CAGR}_{\text{excess}} = \text{CAGR}_{\text{taxless}} - \text{CAGR}_{\text{LQDT}}")
+            st.info("💡Модифицированное нелинейное произведение при отрицательной избыточной доходности (модификация Израильсона) используется в исследовании - тк корректно ранжирует, хотя и сжимает отрицательные «хвосты».")
         elif metric == 'jenser':
             st.markdown("""
-            * **Экономический смысл:** 
+            * **Экономический смысл:** Альфа Дженсена, измеряющая абсолютную избыточную доходность стратегии относительно рыночного бенчмарка (MCFTRR в данном исследовании), скорректированную на величину системного рыночного риска портфеля (β).
+            * **Математический аппарат:** Коэффициент системного риска портфеля (β) рассчитывается через отношение ковариации избыточных доходностей стратегии и индекса к дисперсии индекса на безналоговом треке:
             """)
+            st.latex(r"\beta =\frac{\mathrm{Cov}\>(r_{t}-r_{\text{LQDT},t},\,\,r_{\text{MOEX},t}-r_{\text{LQDT},t})}{\mathrm{Var}\>(r_{\text{MOEX},t}-r_{\text{LQDT},t})+10^{-12}}")
             st.markdown("""
-
-                        """)
+            Итоговое значение Альфы формируется на базе аннуализированных геометрических доходностей:
+            """)
+            st.latex(r"\alpha =\text{CAGR}_{\text{taxless}}- [ \text{CAGR}_{\text{LQDT}}+\beta \cdot (\text{CAGR}_{\text{MOEX}}-\text{CAGR}_{\text{LQDT}}) ]")
+            st.info("💡На графике величина приведена к процентному масштабу.")
 
 
     render_slide_3()
@@ -656,35 +663,54 @@ elif idx_active == 3:
         risk_metric = st.session_state.active_risk_metric
 
         df_runs = load_backtest_runs()
-        if not df_runs.empty:
-            fig_violin = px.violin(
-                df_runs,
-                x='Strategy',
-                y=risk_metric,
-                color='Strategy',
-                color_discrete_map=STRATEGY_COLORS,
-                points="all",
-                title=f"Ядерная оценка плотности распределения: {risks_map[risk_metric]}",
-                box=False
-            )
 
-            fig_violin.update_layout(
-                showlegend=True,
-                yaxis_title="Значение параметра (%)",
-                xaxis_title="Модель оптимизации",
-                hovermode="closest"
-            )
+        fig_violin = px.violin(
+            df_runs,
+            x='Strategy',
+            y=risk_metric,
+            color='Strategy',
+            color_discrete_map=STRATEGY_COLORS,
+            points="all",
+            title=f"Ядерная оценка плотности распределения: {risks_map[risk_metric]}",
+            box=False
+        )
 
-            fig_violin.update_traces(
-                marker=dict(
-                    size=2
-                ),
-                spanmode='hard'
-            )
+        fig_violin.update_layout(
+            showlegend=True,
+            yaxis_title="Значение параметра (%)",
+            xaxis_title="Модель оптимизации",
+            hovermode="closest"
+        )
 
-            st.plotly_chart(fig_violin, use_container_width=True, config={'displayModeBar': False})
-        else:
-            st.warning("Файлы `test_*.csv` не найдены в папке `data/results/strat_csv`.")
+        fig_violin.update_traces(
+            marker=dict(
+                size=2
+            ),
+            spanmode='hard'
+        )
+
+        st.plotly_chart(fig_violin, use_container_width=True, config={'displayModeBar': False})
+        if risk_metric == 'max_drawdown':
+            st.markdown("""
+            * **Экономический смысл:** Максимальная глубина падения стоимости портфеля от локального исторического пика до последующего минимума. Показывает предельный бумажный убыток, который пришлось пересидеть инвестору на всем временном интервале.
+            * **Математический аппарат:** Расчет текущей просадки портфеля и фиксация ее экстремума:
+            """)
+            st.latex(r"\text{MaxDD}=\min _{t}\left( \frac{S_{t}}{\max _{\tau \le t}S_{\tau }} - 1\right)")
+            st.info("💡На графике величина приведена к процентному масштабу.")
+        elif risk_metric == 'max_daily_drop':
+            st.markdown("""
+            * **Экономический смысл:** Предельный дневной убыток портфеля за одну отдельную торговую сессию. Измеряет устойчивость стратегии к мгновенным ценовым гэпам («черным лебедям») внутри одного торгового дня.
+            * **Математический аппарат:** Поиск абсолютного минимума в векторе ежедневных доходностей портфеля:
+            """)
+            st.latex(r"\text{MaxDailyDrop}=\min \left(\min _{t}r_{t}, 0\right)")
+            st.info("💡На графике величина приведена к процентному масштабу.")
+        elif risk_metric == 'ulcer':
+            st.markdown("""
+            * **Экономический смысл:** Индекс Ульцера оценивает совокупный психологический и временной износ капитала — то есть как глубоко и как долго портфель находился в состоянии просадки.
+            * **Математический аппарат:** Рассчитывается как среднеквадратичное значение ежедневных просадок от локального пика портфеля:
+            """)
+            st.latex(r"\text{UI}=-\sqrt{\frac{1}{T}\sum_{t=1}^T\left(1 - \frac{S_{t}}{\max _{\tau \le t}S_{\tau }}\right)^2}")
+            st.info("💡На графике величина приведена к процентному масштабу.")
 
 
     render_slide_4()
@@ -701,7 +727,7 @@ elif idx_active == 4:
 
         contours_map = {
             'contour_a': "Контур А: Классический (CAGR vs Max Drawdown)",
-            'contour_b': "Контур Б: Продвинутый / Риск ЦБ (Jensen's Alpha vs Ulcer Index)"
+            'contour_b': "Контур Б: Продвинутый (Jensen's Alpha vs Ulcer Index)"
         }
         cols_cont = st.columns(len(contours_map))
 
@@ -717,78 +743,85 @@ elif idx_active == 4:
         contour_mode = st.session_state.active_contour_mode
         df_runs = load_backtest_runs()
 
-        if not df_runs.empty:
-            fig_scatter = go.Figure()
+        fig_scatter = go.Figure()
 
-            for strat_name, color in STRATEGY_COLORS.items():
-                strat_df = df_runs[df_runs['Strategy'] == strat_name]
+        for strat_name, color in STRATEGY_COLORS.items():
+            strat_df = df_runs[df_runs['Strategy'] == strat_name]
 
-                if contour_mode == 'contour_a':
-                    x_vals = np.abs(strat_df['max_drawdown'].to_numpy())
-                    y_vals = strat_df['cagr_taxless'].to_numpy() - strat_df['cagr_lqdt'].to_numpy()
+            if contour_mode == 'contour_a':
+                x_vals = np.abs(strat_df['max_drawdown'].to_numpy())
+                y_vals = strat_df['cagr_taxless'].to_numpy() - strat_df['cagr_lqdt'].to_numpy()
 
-                    x_title, y_title = "Максимальная историческая просадка MaxDD (%)", "Среднегодовой геометрический рост CAGR (%)"
-                    title_text = "Фазовое пространство эффективности капитала (Контур А)"
-                else:
-                    x_vals = np.abs(strat_df['ulcer'].to_numpy())
-                    y_vals = strat_df['jenser'].to_numpy()
+                x_title, y_title = "Максимальная историческая просадка MaxDD (%)", "Среднегодовой геометрический рост CAGR (%)"
+                title_text = "Фазовое пространство эффективности капитала (Контур А)"
+            else:
+                x_vals = np.abs(strat_df['ulcer'].to_numpy())
+                y_vals = strat_df['jenser'].to_numpy()
 
-                    x_title, y_title = "Индекс Ульцера UI (Временной износ фонда, %)", "Чистая Альфа Дженсена (Jensen's Alpha, % годовых)"
-                    title_text = "Фазовое пространство регуляторного риска ЦБ (Контур Б)"
+                x_title, y_title = "Индекс Ульцера UI (Временной износ фонда, %)", "Чистая Альфа Дженсена (Jensen's Alpha, % годовых)"
+                title_text = "Фазовое пространство регуляторного риска ЦБ (Контур Б)"
 
-                fig_scatter.add_trace(go.Scatter(
-                    x=x_vals,
-                    y=y_vals,
-                    mode='markers',
-                    name=strat_name,
-                    legendgroup=strat_name,
-                    showlegend=False,
-                    marker=dict(color=color, size=3),
-                    hovertemplate=f"<b>{strat_name}</b><br>{x_title}: %{{x:.2f}}%<br>{y_title}: %{{y:.2f}}%<extra></extra>"
-                ))
+            fig_scatter.add_trace(go.Scatter(
+                x=x_vals,
+                y=y_vals,
+                mode='markers',
+                name=strat_name,
+                legendgroup=strat_name,
+                showlegend=False,
+                marker=dict(color=color, size=3),
+                hovertemplate=f"<b>{strat_name}</b><br>{x_title}: %{{x:.2f}}%<br>{y_title}: %{{y:.2f}}%<extra></extra>"
+            ))
 
-                median_x = np.median(x_vals)
-                median_y = np.median(y_vals)
+            median_x = np.median(x_vals)
+            median_y = np.median(y_vals)
 
-                fig_scatter.add_trace(go.Scattergl(
-                    x=[median_x], y=[median_y],
-                    mode='markers',
-                    name=f"{strat_name}",
-                    legendgroup=strat_name,
-                    showlegend=True,
-                    marker=dict(color=color, size=12, symbol='square', line=dict(color='black', width=1)),
-                    hovertemplate=f"<b>Центр масс: {strat_name}</b><br>Медиана X: {median_x:.2f}%<br>Медиана Y: {median_y:.2f}%<extra></extra>"
-                ))
+            fig_scatter.add_trace(go.Scattergl(
+                x=[median_x], y=[median_y],
+                mode='markers',
+                name=f"{strat_name}",
+                legendgroup=strat_name,
+                showlegend=True,
+                marker=dict(color=color, size=12, symbol='square', line=dict(color='black', width=1)),
+                hovertemplate=f"<b>Центр масс: {strat_name}</b><br>Медиана X: {median_x:.2f}%<br>Медиана Y: {median_y:.2f}%<extra></extra>"
+            ))
 
-                vals, vecs = np.linalg.eigh(np.cov(x_vals, y_vals))
-                t = np.linspace(0, 2 * np.pi, 100)
-                pts = (vecs * (2.45 * np.sqrt(vals))) @ np.vstack([np.cos(t), np.sin(t)])
-                ex, ey = pts[0] + x_vals.mean(), pts[1] + y_vals.mean()
+            vals, vecs = np.linalg.eigh(np.cov(x_vals, y_vals))
+            t = np.linspace(0, 2 * np.pi, 100)
+            pts = (vecs * (2.45 * np.sqrt(vals))) @ np.vstack([np.cos(t), np.sin(t)])
+            ex, ey = pts[0] + x_vals.mean(), pts[1] + y_vals.mean()
 
-                fig_scatter.add_trace(go.Scatter(
-                    x=ex,
-                    y=ey,
-                    mode='lines',
-                    name=strat_name,
-                    line=dict(color=color, width=1.5, dash='dash'),
-                    legendgroup=strat_name,
-                    showlegend=False,
-                    visible=True,
-                    hoverinfo='skip'
-                ))
+            fig_scatter.add_trace(go.Scatter(
+                x=ex,
+                y=ey,
+                mode='lines',
+                name=strat_name,
+                line=dict(color=color, width=1.5, dash='dash'),
+                legendgroup=strat_name,
+                showlegend=False,
+                visible=True,
+                hoverinfo='skip'
+            ))
 
-            fig_scatter.update_layout(
-                title=title_text,
-                xaxis_title=x_title,
-                yaxis_title=y_title,
-                hovermode="closest"
-            )
+        fig_scatter.update_layout(
+            title=title_text,
+            xaxis_title=x_title,
+            yaxis_title=y_title,
+            hovermode="closest"
+        )
 
-            st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
-            st.caption(
-                "ℹ️ *Пунктирные линии отображают 95% границы устойчивости (доверительные эллипсы распределения).*")
-        else:
-            st.warning("Файлы `test_*.csv` не найдены в папке `data/results/`.")
+        st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
+        if contour_mode == 'contour_a':
+            st.markdown("""
+            **Математический комплаенс осей:**
+            """)
+            st.latex(r"")
+            st.info("💡На графике величина приведена к процентному масштабу.")
+        elif contour_mode == 'contour_b':
+            st.markdown("""
+            
+            """)
+            st.latex(r"")
+            st.info("💡На графике величина приведена к процентному масштабу.")
 
 
     render_slide_5()
