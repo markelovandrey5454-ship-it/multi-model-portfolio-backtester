@@ -8,3 +8,5 @@ font = "sans serif"
 [client]
 showErrorDetails = false
 
+[ui]
+hideTopBar = true
