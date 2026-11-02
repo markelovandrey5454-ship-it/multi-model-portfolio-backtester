@@ -144,6 +144,14 @@ st.html(
         font-size: 16px !important;
         line-height: 1.5 !important;
     }
+    @media (max-width: 768px) {
+        .stPlotlyChart, 
+        .stPlotlyChart > div, 
+        [data-testid="stPlotlyChart"] {
+            pointer-events: none !important;
+            user-select: none !important;
+        }
+    }
     </style>
     """
 )
@@ -459,7 +467,7 @@ elif idx_active == 1:
                         name=leg_label,
                         legendgroup=col,
                         line=dict(color=color, width=2, dash=type_line),
-                        hovertemplate='%{x|%Y-%m-%d}<br>Капитал: %{y:,.0f} руб<extra></extra>'
+                        hovertemplate='%{x|%Y-%m-%d}<br>Капитал: %{y:,.0f} руб<extra></extra>',
                     )
 
                     if is_lump_mode:
@@ -530,7 +538,7 @@ elif idx_active == 1:
                 height=620,
                 hovermode="x unified")
 
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
 
         if is_lump_mode:
             st.markdown(f"""* **{selected_scen}:** Начальный капитал {"100 000 000" if fond_key else "1 000 000"} руб. Инвестирован единовременно на начальной точке трека без последующих пополнений или изъятий 
@@ -603,7 +611,7 @@ elif idx_active == 2:
             fig_box.update_layout(yaxis=dict(range=[df_runs['sortino'].min() - 0.01, 0.01]))
             st.caption(f"ℹ️ *Используется верхняя граница в {0.01} для корректного отображения хвоста распределения (искаженным из-за коррективы Израильсона).*")
 
-        st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
         if metric == 'cagr':
             st.markdown("""
             * **Экономический смысл:** Среднегодовой темп роста чистой стоимости активов с учетом сложного процента.
@@ -689,7 +697,7 @@ elif idx_active == 3:
             spanmode='hard'
         )
 
-        st.plotly_chart(fig_violin, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig_violin, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
         if risk_metric == 'max_drawdown':
             st.markdown("""
             * **Экономический смысл:** Максимальная глубина падения стоимости портфеля от локального исторического пика до последующего минимума. Показывает предельный бумажный убыток, который пришлось пересидеть инвестору на всем временном интервале.
@@ -809,7 +817,7 @@ elif idx_active == 4:
             hovermode="closest"
         )
 
-        st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
 
         if contour_mode == "contour_a":
             st.markdown("""
@@ -930,7 +938,7 @@ elif idx_active == 5:
             yaxis=dict(autorange="reversed"),
             legend=dict(orientation="h", x=0.15, y=-0.15)
         )
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
 
         st.markdown(f"""
         * **Природа эталона шума:** Верхняя строка формируется как разность коэффициентов эффективности K между базовыми пассивными стратегиями Uniform 1/N и Random Monkey. 
