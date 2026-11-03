@@ -138,30 +138,21 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
 
 
 st.html(
-    """
-    <style>
-    .stExpander details summary p {
-        font-size: 16px !important;
-        line-height: 1.5 !important;
-    }
-    @media (max-width: 768px) {
-        .stPlotlyChart, 
-        .stPlotlyChart > div, 
-        [data-testid="stPlotlyChart"] {
-            pointer-events: none !important;
-            user-select: none !important;
-        }
-    }
-    </style>
-    """
-)
+"""
+<style>
+.stExpander details summary p {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+}
+</style>
+""")
 
 
 idx_active = st.session_state.current_slide_index
 
 # ----------------- СЛАЙД 1 (Индекс 0) -----------------
 if idx_active == 0:
-    st.title("📊 Построение надежного инвестиционного полигона")
+    st.title("Методология моделирования торговой среды и спецификация оцениваемых стратегий")
 
 
     @st.fragment
@@ -405,7 +396,7 @@ if idx_active == 0:
 
 # ----------------- СЛАЙД 2 (Индекс 1) -----------------
 elif idx_active == 1:
-    st.title("📈 Сравнительное соревнование на 11 летнем треке")
+    st.title("Историческое моделирование траекторий капитала на горизонте 2015–2026 гг.")
 
 
     @st.fragment
@@ -448,12 +439,9 @@ elif idx_active == 1:
             fig = go.Figure()
 
         for col in df_equity.columns:
-            if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(
-                    f"Inflation_Benchmark_{suffix}"):
-                if col.startswith("Inflation_Benchmark"):
-                    base_name = "Inflation_Benchmark"
-                else:
-                    base_name = col.split(f"_{suffix}")[0]
+            if col.endswith(f"_{suffix}") or col.endswith(f"_{suffix}_tf") or col.startswith(f"Inflation_Benchmark_{suffix}"):
+                if col.startswith("Inflation_Benchmark"): base_name = "Inflation_Benchmark"
+                else: base_name = col.split(f"_{suffix}")[0]
 
                 color = STRATEGY_COLORS.get(base_name, '#000000')
                 type_line = 'dash' if 'Inflation' in col else 'solid'
@@ -542,7 +530,7 @@ elif idx_active == 1:
 
         if is_lump_mode:
             st.markdown(f"""* **{selected_scen}:** Начальный капитал {"100 000 000" if fond_key else "1 000 000"} руб. Инвестирован единовременно на начальной точке трека без последующих пополнений или изъятий 
-            для оценки эффективности стратегий на уровне {"крупного фонда" if fond_key else "частного инвестора"}""")
+            для оценки эффективности стратегий на уровне {"крупного фонда" if fond_key else "частного инвестора"}.""")
             st.markdown("""
             * **Описание графика:** 
             <span style="text-indent: 20px; display: inline-block;">  1. Верхняя часть отображает динамику стоимости чистых активов портфеля с учетом обязательного автоматического реинвестирования.
@@ -558,7 +546,7 @@ elif idx_active == 1:
 
 # ----------------- СЛАЙД 3 (Индекс 2) -----------------
 elif idx_active == 2:
-    st.title("📊 Скорость роста и Альфа моделей")
+    st.title("Статистический анализ избыточной доходности и инвестиционной эффективности")
 
 
     @st.fragment
@@ -632,11 +620,11 @@ elif idx_active == 2:
             * **Экономический смысл:** Альфа Дженсена, измеряющая абсолютную избыточную доходность стратегии относительно рыночного бенчмарка (MCFTRR в данном исследовании), скорректированную на величину системного рыночного риска портфеля (β).
             * **Математический аппарат:** Коэффициент системного риска портфеля (β) рассчитывается через отношение ковариации избыточных доходностей стратегии и индекса к дисперсии индекса на безналоговом треке:
             """)
-            st.latex(r"\beta =\frac{\mathrm{Cov}\>(r_{t}-r_{\text{LQDT},t},\,\,r_{\text{MOEX},t}-r_{\text{LQDT},t})}{\mathrm{Var}\>(r_{\text{MOEX},t}-r_{\text{LQDT},t})+10^{-12}}")
+            st.latex(r"\beta =\frac{\mathrm{Cov}\>(r_{t}-r_{\text{LQDT},t},\,\,r_{\text{MCFTRR},t}-r_{\text{LQDT},t})}{\mathrm{Var}\>(r_{\text{MCFTRR},t}-r_{\text{LQDT},t})+10^{-12}}")
             st.markdown("""
             Итоговое значение Альфы формируется на базе аннуализированных геометрических доходностей:
             """)
-            st.latex(r"\alpha =\text{CAGR}_{\text{taxless}}- [ \text{CAGR}_{\text{LQDT}}+\beta \cdot (\text{CAGR}_{\text{MOEX}}-\text{CAGR}_{\text{LQDT}}) ]")
+            st.latex(r"\alpha =\text{CAGR}_{\text{taxless}}- [ \text{CAGR}_{\text{LQDT}}+\beta \cdot (\text{CAGR}_{\text{MCFTRR}}-\text{CAGR}_{\text{LQDT}}) ]")
             st.info("💡На графике величина приведена к процентному масштабу.")
 
 
@@ -644,7 +632,7 @@ elif idx_active == 2:
 
 # ----------------- СЛАЙД 4 (Индекс 3) -----------------
 elif idx_active == 3:
-    st.title("🛡️ Анализ хвостовых рисков плотности распределения")
+    st.title("Оценка плотности распределения хвостовых рисков портфеля")
 
 
     @st.fragment
@@ -725,7 +713,7 @@ elif idx_active == 3:
 
 # ----------------- СЛАЙД 5 (Индекс 4) -----------------
 elif idx_active == 4:
-    st.title("🧬 Фазовые пространства эффективности и риска")
+    st.title("Двумерный анализ робастности стратегий в координатах доходности и риска")
 
 
     @st.fragment
@@ -760,14 +748,14 @@ elif idx_active == 4:
                 x_vals = np.abs(strat_df['max_drawdown'].to_numpy())
                 y_vals = strat_df['cagr_taxless'].to_numpy() - strat_df['cagr_lqdt'].to_numpy()
 
-                x_title, y_title = "Максимальная историческая просадка MaxDD (%)", "Среднегодовой геометрический рост CAGR (%)"
-                title_text = "Фазовое пространство эффективности капитала (Контур А)"
+                x_title, y_title = "Максимальная историческая просадка (MaxDD, %)", "Премия за риск (избыточный CAGR, % годовых)"
+                title_text = "Анализ классической эффективности торговых систем"
             else:
                 x_vals = np.abs(strat_df['ulcer'].to_numpy())
                 y_vals = strat_df['jenser'].to_numpy()
 
-                x_title, y_title = "Индекс Ульцера UI (Временной износ фонда, %)", "Чистая Альфа Дженсена (Jensen's Alpha, % годовых)"
-                title_text = "Фазовое пространство регуляторного риска ЦБ (Контур Б)"
+                x_title, y_title = "Индекс Ульцера (Временной износ фонда, %)", "Чистая Альфа Дженсена (Jensen's Alpha, % годовых)"
+                title_text = "Анализ регуляторного качества и устойчивости стратегий"
 
             fig_scatter.add_trace(go.Scatter(
                 x=x_vals,
@@ -838,7 +826,7 @@ elif idx_active == 4:
 
 # ----------------- СЛАЙД 6 (Индекс 5) -----------------
 elif idx_active == 5:
-    st.title("🎯 Финальное сравнение: как часто и насколько решительно")
+    st.title("Комплексная оценка инвестиционной привлекательности и зон доминирования моделей")
 
 
     @st.fragment
