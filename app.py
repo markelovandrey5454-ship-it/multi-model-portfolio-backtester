@@ -499,7 +499,7 @@ elif idx_active == 1:
                     else:
                         fig.add_trace(trace_line)
 
-        if is_mobile:
+        if mobile:
             # Настройки для смартфонов
             fig.update_layout(
                 height=420 if is_lump_mode else 380, # Оптимальная высота, чтобы не скроллить график
