@@ -650,8 +650,8 @@ elif idx_active == 2:
         else:
             fig_box.update_layout(
                 height=550,
+                yaxis_title="Значение параметра (%)",
                 xaxis_title="Модель оптимизации",
-                yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
                 showlegend=True,
                 legend=dict(
                     x=1.02,            
@@ -737,12 +737,43 @@ elif idx_active == 3:
             box=False
         )
 
-        fig_violin.update_layout(
-            showlegend=True,
-            yaxis_title="Значение параметра (%)",
-            xaxis_title="Модель оптимизации",
-            hovermode="closest"
-        )
+        if mobile:
+                fig_violin.update_layout(
+                    height=340,
+                    margin=dict(l=15, r=15, t=25, b=30),
+                    dragmode=False,
+                    hovermode="closest",
+                    xaxis_title="", 
+                    xaxis=dict(
+                        showticklabels=False,
+                        fixedrange=True
+                    ),
+                    showlegend=True,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="top",
+                        y=-0.08,
+                        xanchor="center",
+                        x=0.5,
+                        font=dict(size=10)
+                    )
+                )
+                fig_violin.update_xaxes(fixedrange=True)
+                fig_violin.update_yaxes(fixedrange=True)
+        else:
+            fig_violin.update_layout(
+                height=550,
+                xaxis_title="Модель оптимизации",
+                yaxis_title="Значение параметра (%)",
+                xaxis_title="Модель оптимизации",
+                showlegend=True,
+                legend=dict(
+                    x=1.02,            
+                    y=1.0,
+                    xanchor='left',
+                    yanchor='top'
+                )
+            )
 
         fig_violin.update_traces(
             marker=dict(
