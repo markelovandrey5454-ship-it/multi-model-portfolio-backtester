@@ -1022,7 +1022,7 @@ elif idx_active == 5:
             rows[name] = [100 * np.mean(code == i) for i in range(5)]
             if name in bench: codes.append(code)
         worst = np.min(codes, axis=0)
-        rows["1vsAll: худшая среди бенчмарков"] = [100 * np.mean(worst == i) for i in range(5)]
+        rows["1vsAll"] = [100 * np.mean(worst == i) for i in range(5)]
 
         st.subheader("Частотный анализ робастности модели против эталона рыночного шума")
         fig = go.Figure()
@@ -1031,7 +1031,7 @@ elif idx_active == 5:
                 zip(["Уверенное поражение", "Поражение", "Ничья", "Победа", "Уверенная победа"],
                     ["#B71C1C", "#EF9A9A", "#E0E0E0", "#A5D6A7", "#1B5E20"])):
             fig.add_trace(go.Bar(
-                y=list(rows),
+                y=list(rows).split()[-1] if mobile else list(rows),
                 x=[r[i] for r in rows.values()],
                 base=[start[n] for n in rows],
                 orientation="h",
@@ -1045,22 +1045,22 @@ elif idx_active == 5:
         if mobile:
             fig.update_layout(
                 barmode="overlay",
-                height=90 + 38 * len(rows),          # Компактная высота строк для экранов телефонов
-                margin=dict(l=10, r=10, t=15, b=65), # b=65 дает пространство для мобильной легенды
+                height=90 + 38 * len(rows), 
+                margin=dict(l=10, r=10, t=15, b=65),
                 dragmode=False,
                 hovermode="closest",
                 xaxis_title="% окон",
                 yaxis=dict(
                     autorange="reversed",
                     fixedrange=True,
-                    tickfont=dict(size=10)           # Чуть уменьшаем шрифт названий бенчмарков слева
+                    tickfont=dict(size=10) 
                 ),
                 xaxis=dict(fixedrange=True),
                 showlegend=True,
                 legend=dict(
                     orientation="h",
                     yanchor="top",
-                    y=-0.18,                         # Укладываем легенду ровно под ось Х
+                    y=-0.3,
                     xanchor="center",
                     x=0.5,
                     font=dict(size=9)
