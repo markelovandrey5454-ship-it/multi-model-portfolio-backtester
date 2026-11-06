@@ -648,21 +648,21 @@ elif idx_active == 2:
                 )
                 fig_box.update_xaxes(fixedrange=True)
                 fig_box.update_yaxes(fixedrange=True)
-            else:
-                fig_box.update_layout(
-                    height=550,
-                    xaxis_title="Модель оптимизации",
-                    yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
-                    showlegend=True,
-                    legend=dict(
-                        x=1.02,                          # На ПК выносим легенду направо
-                        y=1.0,
-                        xanchor='left',
-                        yanchor='top',
-                        bordercolor='LightGray',
-                        borderwidth=1
-                    )
+        else:
+            fig_box.update_layout(
+                height=550,
+                xaxis_title="Модель оптимизации",
+                yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
+                showlegend=True,
+                legend=dict(
+                    x=1.02,                          # На ПК выносим легенду направо
+                    y=1.0,
+                    xanchor='left',
+                    yanchor='top',
+                    bordercolor='LightGray',
+                    borderwidth=1
                 )
+            )
 
         if metric == 'sortino' and zoom_izraelson:
             fig_box.update_layout(yaxis=dict(range=[df_runs['sortino'].min() - 0.01, 0.01]))
