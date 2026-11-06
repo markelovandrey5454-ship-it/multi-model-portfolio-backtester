@@ -1060,7 +1060,7 @@ elif idx_active == 5:
                 legend=dict(
                     orientation="h",
                     yanchor="top",
-                    y=-0.3,
+                    y=-0.1,
                     xanchor="center",
                     x=0.5,
                     font=dict(size=9)
