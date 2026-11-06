@@ -1031,7 +1031,7 @@ elif idx_active == 5:
                 zip(["Уверенное поражение", "Поражение", "Ничья", "Победа", "Уверенная победа"],
                     ["#B71C1C", "#EF9A9A", "#E0E0E0", "#A5D6A7", "#1B5E20"])):
             fig.add_trace(go.Bar(
-                y=[t.split()[-1] for t in list(rows)) if mobile else list(rows),
+                y=[t.split()[-1] for t in list(rows)] if mobile else list(rows),
                 x=[r[i] for r in rows.values()],
                 base=[start[n] for n in rows],
                 orientation="h",
