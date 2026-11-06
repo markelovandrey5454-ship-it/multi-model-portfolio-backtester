@@ -8,3 +8,5 @@ seaborn==0.13.2
 statsmodels==0.14.6
 streamlit==1.66.1
 pyarrow==26.0.0
+streamlit-javascript==0.1.5
+user-agents==2.2.0
