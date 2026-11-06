@@ -156,7 +156,7 @@ if mobile:
     st.html("""
     <style>
     .stAppHeader h1, h1, [data-testid="stHeader"] h1 {
-        font-size: 32px !important;
+        font-size: 30px !important;
     }
     </style>
     """)
