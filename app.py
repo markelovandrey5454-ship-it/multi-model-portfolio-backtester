@@ -898,7 +898,7 @@ elif idx_active == 4:
             fig_scatter.update_layout(
                 title=title_text,
                 height=360,
-                margin=dict(l=10, r=10, t=15, b=60), 
+                margin=dict(l=10, r=10, t=20, b=60), 
                 dragmode=False,
                 hovermode="closest",
                 xaxis_title=x_title,
@@ -913,7 +913,7 @@ elif idx_active == 4:
                 legend=dict(
                     orientation="h",
                     yanchor="top",
-                    y=-0.35, 
+                    y=-0.25, 
                     xanchor="center",
                     x=0.5,
                     font=dict(size=10)
