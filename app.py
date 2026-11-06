@@ -765,7 +765,6 @@ elif idx_active == 3:
                 height=550,
                 xaxis_title="Модель оптимизации",
                 yaxis_title="Значение параметра (%)",
-                xaxis_title="Модель оптимизации",
                 showlegend=True,
                 legend=dict(
                     x=1.02,            
