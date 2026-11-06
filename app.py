@@ -149,6 +149,12 @@ st.html(
 
 
 idx_active = st.session_state.current_slide_index
+ua_string = st_javascript("window.navigator.userAgent;")
+
+if ua_string:
+    user_agent = parse(ua_string)
+    is_mobile = user_agent.is_mobile
+else: is_mobile = False
 
 # ----------------- СЛАЙД 1 (Индекс 0) -----------------
 if idx_active == 0:
@@ -230,6 +236,9 @@ if idx_active == 0:
                 * **Абсолютная ликвидность макроинструментов:** Принято допущение о безграничной ликвидности для квази-кэша (LQDT), валют, металлов и облигаций (представленных в виде индексов). Хотя это и было сделано осознано, 
                 ведь в реальной практике крупный фонд не покупает сами индексы, а собирает портфель из наиболее ликвидных выпусков ОФЗ/ВДО аналогичной дюрации или валют/металлов/кэша - что имеют динамику близкую к индексам на достаточно больших временных окнах.
                 """)
+
+            if is_mobile:  
+                with st.expander("dfeggf  ", expanded=st.session_state.expand_all_state):
 
 
         elif st.session_state.info_mode == "Инфраструктурный контур бэктестирования":
