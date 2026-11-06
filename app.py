@@ -658,9 +658,7 @@ elif idx_active == 2:
                     x=1.02,                          # На ПК выносим легенду направо
                     y=1.0,
                     xanchor='left',
-                    yanchor='top',
-                    bordercolor='LightGray',
-                    borderwidth=1
+                    yanchor='top'
                 )
             )
 
