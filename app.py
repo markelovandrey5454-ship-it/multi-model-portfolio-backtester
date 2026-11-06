@@ -896,12 +896,13 @@ elif idx_active == 4:
 
         if mobile:
             fig_scatter.update_layout(
+                title=title_text,
                 height=360,
                 margin=dict(l=10, r=10, t=15, b=60), 
                 dragmode=False,
                 hovermode="closest",
-                yaxis_title="",
-                xaxis_title="",
+                xaxis_title=x_title,
+                yaxis_title=y_title,
                 xaxis=dict(
                     showticklabels=False, 
                     fixedrange=True
@@ -920,24 +921,10 @@ elif idx_active == 4:
             )
         else:
             fig_scatter.update_layout(
-                height=550,
-                xaxis_title="Модель оптимизации",
-                yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
-                xaxis=dict(
-                    showticklabels=True,
-                    fixedrange=False
-                ),
-                yaxis=dict(fixedrange=False),
-                
-                showlegend=True,
-                legend=dict(
-                    x=1.02,
-                    y=1.0,
-                    xanchor='left',
-                    yanchor='top',
-                    bordercolor='LightGray',
-                    borderwidth=1
-                )
+                title=title_text,
+                xaxis_title=x_title,
+                yaxis_title=y_title,
+                hovermode="closest"
             )
 
         st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
