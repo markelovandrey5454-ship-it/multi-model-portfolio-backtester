@@ -1046,7 +1046,7 @@ elif idx_active == 5:
             fig.update_layout(
                 barmode="overlay",
                 height=90 + 38 * len(rows), 
-                margin=dict(l=10, r=10, t=15, b=65),
+                margin=dict(l=10, r=10, t=20, b=65),
                 dragmode=False,
                 hovermode="closest",
                 xaxis_title="% окон",
@@ -1055,12 +1055,13 @@ elif idx_active == 5:
                     fixedrange=True,
                     tickfont=dict(size=10) 
                 ),
+                yaxis_title="",
                 xaxis=dict(fixedrange=True),
                 showlegend=True,
                 legend=dict(
                     orientation="h",
                     yanchor="top",
-                    y=-0.3,
+                    y=-0.4,
                     xanchor="center",
                     x=0.5,
                     font=dict(size=9)
