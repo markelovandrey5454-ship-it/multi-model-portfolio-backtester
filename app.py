@@ -150,6 +150,26 @@ st.html(
     font-size: 16px !important;
     line-height: 1.5 !important;
 }
+/* 1. Делаем саму верхнюю панель прозрачной, чтобы она не перекрывала презентацию */
+[data-testid="stHeader"] {
+    background-color: transparent !important;
+    background: transparent !important;
+}
+
+/* 2. Прячем кнопку "Deploy" (если она отображается на сервере) */
+.stDeployButton {
+    display: none !important;
+}
+
+/* 3. Прячем все пункты системного меню, КРОМЕ последнего ("About" / "Об авторе") */
+[data-testid="main-menu-list"] li:not(:last-child) {
+    display: none !important;
+}
+
+/* Убираем разделительные линии между скрытыми пунктами меню */
+[data-testid="main-menu-list"] div {
+    display: none !important;
+}
 </style>
 """)
 if mobile: 
