@@ -499,45 +499,18 @@ elif idx_active == 1:
                     else:
                         fig.add_trace(trace_line)
 
-        if is_mobile:
-            # Настройки для смартфонов
-            fig.update_layout(
-                height=420 if is_lump_mode else 380, # Оптимальная высота, чтобы не скроллить график
-                margin=dict(l=10, r=10, t=25, b=10), # Минимизируем пустые поля по бокам
-                dragmode=False,                      # Запрещаем двигать оси пальцем вместо скролла страницы
-                hovermode="closest",                 # Оставляем подсказки по тапу без приближения осей
-                
-                # Переносим легенду вниз в горизонтальный режим, чтобы освободить ширину экрана
-                showlegend=True,
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=-0.35 if is_lump_mode else -0.25, # Смещение под график
-                    xanchor="center",
-                    x=0.5,
-                    font=dict(size=10),
-                    bgcolor='rgba(255, 255, 255, 0.6)'
-                )
+        fig.update_layout(
+            legend=dict(
+                x=0.02,
+                y=0.98,
+                xanchor='left',
+                yanchor='top',
+                bgcolor='rgba(255, 255, 255, 0.8)',
+                bordercolor='LightGray',
+                borderwidth=1,
+                tracegroupgap=0
             )
-            # Жестко блокируем мобильное масштабирование (зум пальцами) по осям
-            fig.update_xaxes(fixedrange=True)
-            fig.update_yaxes(fixedrange=True)
-        else:
-            # Десктопные настройки для мониторов ПК
-            fig.update_layout(
-                height=780 if is_lump_mode else 620,
-                hovermode="x unified",
-                legend=dict(
-                    x=0.02,
-                    y=0.98,
-                    xanchor='left',
-                    yanchor='top',
-                    bgcolor='rgba(255, 255, 255, 0.8)',
-                    bordercolor='LightGray',
-                    borderwidth=1,
-                    tracegroupgap=0
-                )
-            )
+        )
 
         if is_lump_mode:
             symlog_ticks = [-0.10, -0.05, 0.05, 0.10]
@@ -583,7 +556,6 @@ elif idx_active == 1:
 
 
     render_slide_2()
-
 # ----------------- СЛАЙД 3 (Индекс 2) -----------------
 elif idx_active == 2:
     st.title("Статистический анализ избыточной доходности и инвестиционной эффективности")
