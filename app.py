@@ -872,7 +872,7 @@ elif idx_active == 4:
                 mode='markers',
                 name=f"{strat_name}",
                 legendgroup=strat_name,
-                showlegend=False,
+                showlegend=True,
                 marker=dict(color=color, size=12, symbol='square', line=dict(color='black', width=1)),
                 hovertemplate=f"<b>Центр масс: {strat_name}</b><br>Медиана X: {median_x:.2f}%<br>Медиана Y: {median_y:.2f}%<extra></extra>"
             ))
@@ -895,9 +895,6 @@ elif idx_active == 4:
             ))
 
         if mobile:
-        # Принудительно включаем легенду для всех элементов внутри графика на мобильных
-            fig_scatter.update_traces(showlegend=True) 
-            
             fig_scatter.update_layout(
                 height=360,
                 margin=dict(l=10, r=10, t=15, b=60), 
@@ -922,22 +919,19 @@ elif idx_active == 4:
                 )
             )
         else:
-            # ПК-РЕЖИМ: Принудительно возвращаем легенду для элементов на ПК
-            fig_scatter.update_traces(showlegend=True)
-            
             fig_scatter.update_layout(
                 height=550,
                 xaxis_title="Модель оптимизации",
                 yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
                 xaxis=dict(
-                    showticklabels=True,  # Возвращаем подписи осей для ПК
-                    fixedrange=False      # Разрешаем зум на ПК
+                    showticklabels=True,
+                    fixedrange=False
                 ),
                 yaxis=dict(fixedrange=False),
                 
-                showlegend=True,          # Гарантируем отображение легенды
+                showlegend=True,
                 legend=dict(
-                    x=1.02,               # Выносим легенду вправо от графика
+                    x=1.02,
                     y=1.0,
                     xanchor='left',
                     yanchor='top',
