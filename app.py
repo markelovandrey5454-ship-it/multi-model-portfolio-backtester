@@ -511,7 +511,7 @@ elif idx_active == 1:
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
-                    y=-0.45 if is_lump_mode else -0.35,
+                    y=-0.55 if is_lump_mode else -0.55,
                     xanchor="center",
                     x=0.5,
                     font=dict(size=10),
