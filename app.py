@@ -499,18 +499,20 @@ elif idx_active == 1:
                     else:
                         fig.add_trace(trace_line)
 
-        fig.update_layout(
-            legend=dict(
-                x=0.02,
-                y=0.98,
-                xanchor='left',
-                yanchor='top',
-                bgcolor='rgba(255, 255, 255, 0.8)',
-                bordercolor='LightGray',
-                borderwidth=1,
-                tracegroupgap=0
+        if mobile: pass
+        else:
+            fig.update_layout(
+                legend=dict(
+                    x=0.02,
+                    y=0.98,
+                    xanchor='left',
+                    yanchor='top',
+                    bgcolor='rgba(255, 255, 255, 0.8)',
+                    bordercolor='LightGray',
+                    borderwidth=1,
+                    tracegroupgap=0
+                )
             )
-        )
 
         if is_lump_mode:
             symlog_ticks = [-0.10, -0.05, 0.05, 0.10]
