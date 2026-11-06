@@ -507,23 +507,20 @@ elif idx_active == 1:
                 dragmode=False,                      # Запрещаем двигать оси пальцем вместо скролла страницы
                 hovermode="closest",                 # Оставляем подсказки по тапу без приближения осей
                 
-                # Переносим легенду вниз в горизонтальный режим, чтобы освободить ширину экрана
                 showlegend=True,
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
-                    y=-0.35 if is_lump_mode else -0.25, # Смещение под график
+                    y=-0.45 if is_lump_mode else -0.35,
                     xanchor="center",
                     x=0.5,
                     font=dict(size=10),
                     bgcolor='rgba(255, 255, 255, 0.6)'
                 )
             )
-            # Жестко блокируем мобильное масштабирование (зум пальцами) по осям
             fig.update_xaxes(fixedrange=True)
             fig.update_yaxes(fixedrange=True)
         else:
-            # Десктопные настройки для мониторов ПК
             fig.update_layout(
                 height=780 if is_lump_mode else 620,
                 hovermode="x unified",
