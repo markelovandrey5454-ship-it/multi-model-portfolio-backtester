@@ -500,7 +500,6 @@ elif idx_active == 1:
                         fig.add_trace(trace_line)
 
         if mobile:
-            # Настройки для смартфонов
             fig.update_layout(
                 height=420 if is_lump_mode else 380,
                 margin=dict(l=10, r=10, t=25, b=10),
@@ -510,8 +509,9 @@ elif idx_active == 1:
                 showlegend=True,
                 legend=dict(
                     orientation="h",
-                    yanchor="bottom",
+                    yanchor="top",
                     xanchor="center",
+                    y=-0.08
                     x=0.5,
                     font=dict(size=10),
                     bgcolor='rgba(255, 255, 255, 0.6)'
