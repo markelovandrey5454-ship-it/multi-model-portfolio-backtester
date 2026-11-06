@@ -1031,7 +1031,7 @@ elif idx_active == 5:
                 zip(["Уверенное поражение", "Поражение", "Ничья", "Победа", "Уверенная победа"],
                     ["#B71C1C", "#EF9A9A", "#E0E0E0", "#A5D6A7", "#1B5E20"])):
             fig.add_trace(go.Bar(
-                y=[t.split()[-1] for t in list(rows)] if mobile else list(rows),
+                y=list(rows),
                 x=[r[i] for r in rows.values()],
                 base=[start[n] for n in rows],
                 orientation="h",
@@ -1102,13 +1102,13 @@ elif idx_active == 5:
             "сверх-консервативного": np.linspace(5, 20, 11),
         }
 
-        html_table = """
+        html_table = f"""
         <table style="width:100%; border-collapse: collapse; font-family: inherit; font-size: 14px; table-layout: fixed;">
             <thead>
                 <tr style="background-color: rgba(49, 51, 63, 0.05); border-bottom: 2px solid rgba(49, 51, 63, 0.1);">
-                    <th style="width: 20%; text-align: left; padding: 10px;">Стратегия</th>
-                    <th style="width: 65%; text-align: left; padding: 10px;">Вердикт</th>
-                    <th style="width: 15%; text-align: center; padding: 10px;">Гарантированная доля побед, %</th>
+                    <th style="width: {25 if mobile else 20}%; text-align: left; padding: 10px;">Стратегия</th>
+                    <th style="width: {50 if mobile else 65}%; text-align: left; padding: 10px;">Вердикт</th>
+                    <th style="width: {25 if mobile else 15}%; text-align: center; padding: 10px;">Гарантированная доля побед, %</th>
                 </tr>
             </thead>
             <tbody>
