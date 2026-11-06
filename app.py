@@ -625,7 +625,7 @@ elif idx_active == 2:
         )
 
         if mobile:
-                f_other.update_layout(
+                fig_box.update_layout(
                     height=340,                          # Делаем чуть ниже, так как текста нет
                     margin=dict(l=10, r=10, t=15, b=40), # Максимум места под сам график
                     dragmode=False,
@@ -646,11 +646,10 @@ elif idx_active == 2:
                         font=dict(size=10)
                     )
                 )
-                f_other.update_xaxes(fixedrange=True)
-                f_other.update_yaxes(fixedrange=True)
+                fig_box.update_xaxes(fixedrange=True)
+                fig_box.update_yaxes(fixedrange=True)
             else:
-                # ДЕСКТОПНЫЙ РЕЖИМ: возвращаем полные подписи и десктопную легенду
-                f_other.update_layout(
+                fig_box.update_layout(
                     height=550,
                     xaxis_title="Модель оптимизации",
                     yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
