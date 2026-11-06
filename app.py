@@ -511,7 +511,7 @@ elif idx_active == 1:
                     orientation="h",
                     yanchor="top",
                     xanchor="center",
-                    y=-0.08
+                    y=-0.08,
                     x=0.5,
                     font=dict(size=10),
                     bgcolor='rgba(255, 255, 255, 0.6)'
