@@ -138,6 +138,10 @@ def load_and_calculate_equity(file_path, suffix, initial_cap, is_lump_mode):
 
     return df_equity, labels_dict, df_pct_all
 
+ua_string = st_javascript("window.navigator.userAgent;")
+
+if ua_string: mobile = parse(ua_string).is_mobile
+else: mobile = False
 
 st.html(
 """
@@ -148,15 +152,18 @@ st.html(
 }
 </style>
 """)
+if mobile: 
+    st.html("""
+    <style>
+    .stAppHeader h1, h1, [data-testid="stHeader"] h1 {
+        font-size: 24px !important;
+        line-height: 1.2 !important;
+    }
+    </style>
+    """)
 
 
 idx_active = st.session_state.current_slide_index
-ua_string = st_javascript("window.navigator.userAgent;")
-
-if ua_string:
-    user_agent = parse(ua_string)
-    is_mobile = user_agent.is_mobile
-else: is_mobile = False
 
 # ----------------- СЛАЙД 1 (Индекс 0) -----------------
 if idx_active == 0:
