@@ -239,6 +239,7 @@ if idx_active == 0:
 
             if is_mobile:  
                 with st.expander("dfeggf  ", expanded=st.session_state.expand_all_state):
+                    pass
 
 
         elif st.session_state.info_mode == "Инфраструктурный контур бэктестирования":
