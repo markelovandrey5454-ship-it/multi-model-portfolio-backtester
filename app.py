@@ -854,6 +854,7 @@ elif idx_active == 4:
                 title_text = "Анализ регуляторного качества и устойчивости стратегий"
 
             fig_scatter.add_trace(go.Scatter(
+                title=title_text,
                 x=x_vals,
                 y=y_vals,
                 mode='markers',
@@ -872,7 +873,7 @@ elif idx_active == 4:
                 mode='markers',
                 name=f"{strat_name}",
                 legendgroup=strat_name,
-                showlegend=True,
+                showlegend=False,
                 marker=dict(color=color, size=12, symbol='square', line=dict(color='black', width=1)),
                 hovertemplate=f"<b>Центр масс: {strat_name}</b><br>Медиана X: {median_x:.2f}%<br>Медиана Y: {median_y:.2f}%<extra></extra>"
             ))
@@ -894,12 +895,43 @@ elif idx_active == 4:
                 hoverinfo='skip'
             ))
 
-        fig_scatter.update_layout(
-            title=title_text,
-            xaxis_title=x_title,
-            yaxis_title=y_title,
-            hovermode="closest"
-        )
+        if mobile:
+                fig_scatter.update_layout(
+                    height=340,
+                    margin=dict(l=15, r=15, t=25, b=30),
+                    dragmode=False,
+                    hovermode="closest",
+                    xaxis_title="", 
+                    xaxis=dict(
+                        showticklabels=False,
+                        fixedrange=True
+                    ),
+                    showlegend=True,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="top",
+                        y=-0.08,
+                        xanchor="center",
+                        x=0.5,
+                        font=dict(size=10)
+                    )
+                )
+                fig_scatter.update_xaxes(fixedrange=True)
+                fig_scatter.update_yaxes(fixedrange=True)
+        else:
+            fig_scatter.update_layout(
+                height=550,
+                xaxis_title=x_title,
+                yaxis_title=y_title,
+                showlegend=True,
+                hovermode="closest",
+                legend=dict(
+                    x=1.02,            
+                    y=1.0,
+                    xanchor='left',
+                    yanchor='top'
+                )
+            )
 
         st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
 
