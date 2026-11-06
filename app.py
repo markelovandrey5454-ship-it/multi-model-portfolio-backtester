@@ -627,9 +627,14 @@ elif idx_active == 2:
         if mobile:
                 fig_box.update_layout(
                     height=340,
-                    margin=dict(l=10, r=10, t=10, b=40),
+                    margin=dict(l=10, r=10, t=20, b=40),
                     dragmode=False,
                     hovermode="closest",
+                    xaxis_title="", 
+                    xaxis=dict(
+                        showticklabels=False,
+                        fixedrange=True
+                    ),
                     showlegend=True,
                     legend=dict(
                         orientation="h",
