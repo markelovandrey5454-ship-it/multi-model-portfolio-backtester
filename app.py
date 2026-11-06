@@ -1041,13 +1041,44 @@ elif idx_active == 5:
                 customdata=[r[i] for r in rows.values()]
             ))
             for n, r in rows.items(): start[n] += r[i]
-        fig.update_layout(
-            barmode="overlay",
-            height=130 + 62 * len(rows),
-            xaxis_title="% окон",
-            yaxis=dict(autorange="reversed"),
-            legend=dict(orientation="h", x=0.15, y=-0.15)
-        )
+        
+        if mobile:
+            fig.update_layout(
+                barmode="overlay",
+                height=90 + 38 * len(rows),          # Компактная высота строк для экранов телефонов
+                margin=dict(l=10, r=10, t=15, b=65), # b=65 дает пространство для мобильной легенды
+                dragmode=False,
+                hovermode="closest",
+                xaxis_title="% окон",
+                yaxis=dict(
+                    autorange="reversed",
+                    fixedrange=True,
+                    tickfont=dict(size=10)           # Чуть уменьшаем шрифт названий бенчмарков слева
+                ),
+                xaxis=dict(fixedrange=True),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="top",
+                    y=-0.18,                         # Укладываем легенду ровно под ось Х
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=9)
+                )
+            )
+        else:
+            fig.update_layout(
+                barmode="overlay",
+                height=130 + 62 * len(rows),
+                xaxis_title="% окон",
+                yaxis=dict(autorange="reversed"),
+                showlegend=True,
+                legend=dict(
+                    orientation="h", 
+                    x=0.15, 
+                    y=-0.15
+                )
+            )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False, 'showTips': False})
 
         st.markdown(f"""
