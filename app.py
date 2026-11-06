@@ -624,11 +624,46 @@ elif idx_active == 2:
             title=f"Распределение метрики: {metrics_map[metric]}"
         )
 
-        fig_box.update_layout(
-            showlegend=False,
-            yaxis_title=metrics_map[metric],
-            xaxis_title="Модель оптимизации"
-        )
+        if mobile:
+                f_other.update_layout(
+                    height=340,                          # Делаем чуть ниже, так как текста нет
+                    margin=dict(l=10, r=10, t=15, b=40), # Максимум места под сам график
+                    dragmode=False,
+                    hovermode="closest",
+                    
+                    # Названия осей на телефонах просто СТИРАЕМ, чтобы освободить место
+                    xaxis_title="", 
+                    yaxis_title="",
+                    
+                    # Легенду оставляем включенной, но без лишних рамок
+                    showlegend=True,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="top",
+                        y=-0.08,                         # Аккуратно прижимаем снизу к оси
+                        xanchor="center",
+                        x=0.5,
+                        font=dict(size=10)
+                    )
+                )
+                f_other.update_xaxes(fixedrange=True)
+                f_other.update_yaxes(fixedrange=True)
+            else:
+                # ДЕСКТОПНЫЙ РЕЖИМ: возвращаем полные подписи и десктопную легенду
+                f_other.update_layout(
+                    height=550,
+                    xaxis_title="Модель оптимизации",
+                    yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
+                    showlegend=True,
+                    legend=dict(
+                        x=1.02,                          # На ПК выносим легенду направо
+                        y=1.0,
+                        xanchor='left',
+                        yanchor='top',
+                        bordercolor='LightGray',
+                        borderwidth=1
+                    )
+                )
 
         if metric == 'sortino' and zoom_izraelson:
             fig_box.update_layout(yaxis=dict(range=[df_runs['sortino'].min() - 0.01, 0.01]))
