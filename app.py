@@ -42,13 +42,15 @@ st.set_page_config(
     layout="wide",
     menu_items={
         'About': f"""
-        # Об авторе
-        Привет! Рад приветствовать тебя на презентации инвестиционного дашборда.
+        # Инвестиционный дашборд
+        Рад приветствовать тебя на презентации проекта!
         
-        Вы можете связаться со мной или посмотреть исходный код проекта, отсканировав этот QR-код:
+        Сканируй QR-код для связи:
+
+        <div>
+            <img src="data:image/png;base64,{QR_BASE64}" width="200" style="display: block; margin: 20px auto; border-radius: 8px;">
+        </div>
         
-        <br><br>
-        <img src="data:image/png;base64,{QR_BASE64}" width="200" style="display: block; margin: 0 auto;">
         """
     }
 )
@@ -168,6 +170,28 @@ st.html(
     font-size: 16px !important;
     line-height: 1.5 !important;
 }
+/* Прячем верхнюю кнопку "Deploy" (иконка облака), "Share" и звездочку */
+.stDeployButton, [data-testid="stHeader"] button:not([id]) {
+    display: none !important;
+}
+
+/* Точечно скрываем все пункты выпадающего меню, кроме "About" */
+[data-testid="main-menu-list"] button:not(:has([data-testid="stNotification"])) {
+    /* Если в твоей версии About не имеет уникального дата-теста, мы скроем первые 4 пункта по тексту: */
+}
+
+/* Универсальный и самый надежный способ для v1.66: скрываем элементы по их текстовому содержанию */
+[data-testid="main-menu-list"] li:has(button:contains("Rerun")),
+[data-testid="main-menu-list"] li:has(button:contains("Clear cache")),
+[data-testid="main-menu-list"] li:has(button:contains("Print")),
+[data-testid="main-menu-list"] li:has(button:contains("Record screen")) {
+    display: none !important;
+}
+
+/* Убираем серую плашку футера "Made with Streamlit" внизу меню */
+[data-testid="main-menu-footer"] {
+    display: none !important;
+}
 </style>
 """)
 if mobile: 
@@ -179,7 +203,10 @@ if mobile:
     </style>
     """)
 
-
+with st.popover("📱 Ссылка на презентацию", use_container_width=False):
+    st.write("Сканируй код, чтобы открыть дашборд на телефоне:")
+    st.markdown(f'<img src="data:image/png;base64,{QR_BASE64}" width="200" style="display: block; margin: 0 auto;">', unsafe_allow_html=True)
+    
 idx_active = st.session_state.current_slide_index
 
 # ----------------- СЛАЙД 1 (Индекс 0) -----------------
