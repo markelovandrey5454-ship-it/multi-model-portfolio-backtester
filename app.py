@@ -626,21 +626,16 @@ elif idx_active == 2:
 
         if mobile:
                 fig_box.update_layout(
-                    height=340,                          # Делаем чуть ниже, так как текста нет
-                    margin=dict(l=10, r=10, t=15, b=40), # Максимум места под сам график
+                    height=350,
+                    margin=dict(l=10, r=10, t=10, b=40),
                     dragmode=False,
                     hovermode="closest",
-                    
-                    # Названия осей на телефонах просто СТИРАЕМ, чтобы освободить место
-                    xaxis_title="", 
-                    yaxis_title="",
-                    
-                    # Легенду оставляем включенной, но без лишних рамок
+                    x="", 
                     showlegend=True,
                     legend=dict(
                         orientation="h",
                         yanchor="top",
-                        y=-0.08,                         # Аккуратно прижимаем снизу к оси
+                        y=-0.08,
                         xanchor="center",
                         x=0.5,
                         font=dict(size=10)
@@ -655,7 +650,7 @@ elif idx_active == 2:
                 yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
                 showlegend=True,
                 legend=dict(
-                    x=1.02,                          # На ПК выносим легенду направо
+                    x=1.02,            
                     y=1.0,
                     xanchor='left',
                     yanchor='top'
