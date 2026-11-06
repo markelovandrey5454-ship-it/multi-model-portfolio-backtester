@@ -733,7 +733,7 @@ elif idx_active == 3:
             color='Strategy',
             color_discrete_map=STRATEGY_COLORS,
             points="all",
-            title=f"Распределение метрики: {risks_map[risk_metric]}"
+            title=f"Распределение метрики: {risks_map[risk_metric]}",
             box=False
         )
 
