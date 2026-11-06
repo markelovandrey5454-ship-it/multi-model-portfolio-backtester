@@ -630,7 +630,6 @@ elif idx_active == 2:
                     margin=dict(l=10, r=10, t=10, b=40),
                     dragmode=False,
                     hovermode="closest",
-                    x="", 
                     showlegend=True,
                     legend=dict(
                         orientation="h",
