@@ -896,31 +896,31 @@ elif idx_active == 4:
 
         if mobile:
         # Принудительно включаем легенду для всех элементов внутри графика на мобильных
-        fig_scatter.update_traces(showlegend=True) 
-        
-        fig_scatter.update_layout(
-            height=360,
-            margin=dict(l=10, r=10, t=15, b=60), 
-            dragmode=False,
-            hovermode="closest",
-            yaxis_title="",
-            xaxis_title="",
-            xaxis=dict(
-                showticklabels=False, 
-                fixedrange=True
-            ),
-            yaxis=dict(fixedrange=True),
+            fig_scatter.update_traces(showlegend=True) 
             
-            showlegend=True,
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=-0.15, 
-                xanchor="center",
-                x=0.5,
-                font=dict(size=10)
+            fig_scatter.update_layout(
+                height=360,
+                margin=dict(l=10, r=10, t=15, b=60), 
+                dragmode=False,
+                hovermode="closest",
+                yaxis_title="",
+                xaxis_title="",
+                xaxis=dict(
+                    showticklabels=False, 
+                    fixedrange=True
+                ),
+                yaxis=dict(fixedrange=True),
+                
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="top",
+                    y=-0.15, 
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=10)
+                )
             )
-        )
         else:
             # ПК-РЕЖИМ: Принудительно возвращаем легенду для элементов на ПК
             fig_scatter.update_traces(showlegend=True)
