@@ -1049,7 +1049,6 @@ elif idx_active == 5:
                 margin=dict(l=10, r=10, t=20, b=45),
                 dragmode=False,
                 hovermode="closest",
-                xaxis_title="% окон",
                 yaxis=dict(
                     autorange="reversed",
                     fixedrange=True,
