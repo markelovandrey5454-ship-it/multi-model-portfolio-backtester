@@ -895,42 +895,54 @@ elif idx_active == 4:
             ))
 
         if mobile:
-                fig_scatter.update_layout(  
-                    title=title_text,
-                    height=340,
-                    margin=dict(l=15, r=15, t=25, b=30),
-                    dragmode=False,
-                    hovermode="closest",
-                    xaxis_title="", 
-                    xaxis=dict(
-                        showticklabels=False,
-                        fixedrange=True
-                    ),
-                    showlegend=True,
-                    legend=dict(
-                        orientation="h",
-                        yanchor="top",
-                        y=-0.08,
-                        xanchor="center",
-                        x=0.5,
-                        font=dict(size=10)
-                    )
-                )
-                fig_scatter.update_xaxes(fixedrange=True)
-                fig_scatter.update_yaxes(fixedrange=True)
+        # Принудительно включаем легенду для всех элементов внутри графика на мобильных
+        f_other.update_traces(showlegend=True) 
+        
+        f_other.update_layout(
+            height=360,
+            margin=dict(l=10, r=10, t=15, b=60), 
+            dragmode=False,
+            hovermode="closest",
+            yaxis_title="",
+            xaxis_title="",
+            xaxis=dict(
+                showticklabels=False, 
+                fixedrange=True
+            ),
+            yaxis=dict(fixedrange=True),
+            
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=-0.15, 
+                xanchor="center",
+                x=0.5,
+                font=dict(size=10)
+            )
+        )
         else:
-            fig_scatter.update_layout(
-                title=title_text,
+            # ПК-РЕЖИМ: Принудительно возвращаем легенду для элементов на ПК
+            f_other.update_traces(showlegend=True)
+            
+            f_other.update_layout(
                 height=550,
-                xaxis_title=x_title,
-                yaxis_title=y_title,
-                showlegend=True,
-                hovermode="closest",
+                xaxis_title="Модель оптимизации",
+                yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
+                xaxis=dict(
+                    showticklabels=True,  # Возвращаем подписи осей для ПК
+                    fixedrange=False      # Разрешаем зум на ПК
+                ),
+                yaxis=dict(fixedrange=False),
+                
+                showlegend=True,          # Гарантируем отображение легенды
                 legend=dict(
-                    x=1.02,            
+                    x=1.02,               # Выносим легенду вправо от графика
                     y=1.0,
                     xanchor='left',
-                    yanchor='top'
+                    yanchor='top',
+                    bordercolor='LightGray',
+                    borderwidth=1
                 )
             )
 
