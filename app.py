@@ -896,9 +896,9 @@ elif idx_active == 4:
 
         if mobile:
         # Принудительно включаем легенду для всех элементов внутри графика на мобильных
-        f_other.update_traces(showlegend=True) 
+        fig_scatter.update_traces(showlegend=True) 
         
-        f_other.update_layout(
+        fig_scatter.update_layout(
             height=360,
             margin=dict(l=10, r=10, t=15, b=60), 
             dragmode=False,
@@ -923,9 +923,9 @@ elif idx_active == 4:
         )
         else:
             # ПК-РЕЖИМ: Принудительно возвращаем легенду для элементов на ПК
-            f_other.update_traces(showlegend=True)
+            fig_scatter.update_traces(showlegend=True)
             
-            f_other.update_layout(
+            fig_scatter.update_layout(
                 height=550,
                 xaxis_title="Модель оптимизации",
                 yaxis_title=metrics_map[metric] if 'metric' in locals() else "",
