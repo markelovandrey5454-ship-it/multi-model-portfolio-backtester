@@ -627,7 +627,7 @@ elif idx_active == 2:
         if mobile:
                 fig_box.update_layout(
                     height=340,
-                    margin=dict(l=15, r=15, t=20, b=40),
+                    margin=dict(l=15, r=15, t=25, b=30),
                     dragmode=False,
                     hovermode="closest",
                     xaxis_title="", 
