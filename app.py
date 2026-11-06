@@ -854,7 +854,6 @@ elif idx_active == 4:
                 title_text = "Анализ регуляторного качества и устойчивости стратегий"
 
             fig_scatter.add_trace(go.Scatter(
-                title=title_text,
                 x=x_vals,
                 y=y_vals,
                 mode='markers',
@@ -896,7 +895,8 @@ elif idx_active == 4:
             ))
 
         if mobile:
-                fig_scatter.update_layout(
+                fig_scatter.update_layout(  
+                    title=title_text,
                     height=340,
                     margin=dict(l=15, r=15, t=25, b=30),
                     dragmode=False,
@@ -920,6 +920,7 @@ elif idx_active == 4:
                 fig_scatter.update_yaxes(fixedrange=True)
         else:
             fig_scatter.update_layout(
+                title=title_text,
                 height=550,
                 xaxis_title=x_title,
                 yaxis_title=y_title,
