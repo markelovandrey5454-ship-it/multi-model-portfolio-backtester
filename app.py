@@ -502,16 +502,15 @@ elif idx_active == 1:
         if mobile:
             # Настройки для смартфонов
             fig.update_layout(
-                height=420 if is_lump_mode else 380, # Оптимальная высота, чтобы не скроллить график
-                margin=dict(l=10, r=10, t=25, b=10), # Минимизируем пустые поля по бокам
-                dragmode=False,                      # Запрещаем двигать оси пальцем вместо скролла страницы
-                hovermode="closest",                 # Оставляем подсказки по тапу без приближения осей
+                height=420 if is_lump_mode else 380,
+                margin=dict(l=10, r=10, t=25, b=10),
+                dragmode=False,
+                hovermode="closest",
                 
                 showlegend=True,
                 legend=dict(
                     orientation="h",
                     yanchor="bottom",
-                    y=-0.55 if is_lump_mode else -0.55,
                     xanchor="center",
                     x=0.5,
                     font=dict(size=10),
