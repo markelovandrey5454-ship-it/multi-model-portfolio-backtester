@@ -913,7 +913,7 @@ elif idx_active == 4:
                 legend=dict(
                     orientation="h",
                     yanchor="top",
-                    y=-0.15, 
+                    y=-0.35, 
                     xanchor="center",
                     x=0.5,
                     font=dict(size=10)
